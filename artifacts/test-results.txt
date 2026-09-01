@@ -1,0 +1,26 @@
+# Final test evidence
+
+Working directory: repository root
+
+Command: `./gradlew clean test build --no-daemon`
+Result: `BUILD SUCCESSFUL`
+
+Programmatically summed after the final clean build from all current `app/build/test-results/jvmTest/TEST-*.xml` and `core/build/test-results/jvmTest/TEST-*.xml` files: **17 tests, 0 failures, 0 errors, 0 skipped across 8 XML files**.
+
+| Module | Test class/file | Tests | Result |
+|---|---|---:|---|
+| core | `core/src/commonTest/kotlin/DomainRewriteTest.kt` | 4 | PASS |
+| core | `core/src/jvmTest/kotlin/persistence/RoomPersistenceTest.kt` | 2 | PASS |
+| core | `core/src/jvmTest/kotlin/persistence/RoomInvariantTest.kt` | 2 | PASS |
+| core | `core/src/jvmTest/kotlin/persistence/ManyToManyTest.kt` | 1 | PASS |
+| core | `core/src/jvmTest/kotlin/application/ControlScenarioTest.kt` | 1 | PASS |
+| core | `core/src/jvmTest/kotlin/application/RoomAdministrationTest.kt` | 2 | PASS |
+| app | `app/src/commonTest/kotlin/ui/ViewModelValidationTest.kt` | 1 | PASS |
+| app | `app/src/commonTest/kotlin/ui/ViewModelOperationsTest.kt` | 4 | PASS |
+
+The control scenario was also run explicitly after implementation:
+`./gradlew :core:jvmTest --tests application.ControlScenarioTest --no-daemon` → `BUILD SUCCESSFUL`.
+
+The final full clean build was rerun after that filtered control run, restoring the complete 17-test XML set before this count was generated.
+
+Bundled SQLite emits a current-JDK native-access warning during tests. It is non-fatal and does not change the pass result.

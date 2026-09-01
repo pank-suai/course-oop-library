@@ -1,3 +1,5 @@
+import de.infolektuell.gradle.typst.tasks.TypstCompileTask
+
 plugins{
     alias(libs.plugins.typst)
 }
@@ -5,6 +7,10 @@ plugins{
 
 typst {
     version = "v0.14.2"
+}
+
+tasks.withType<TypstCompileTask>().configureEach {
+    useSystemFonts = true
 }
 
 val main by typst.sourceSets.registering {

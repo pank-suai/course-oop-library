@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<title>Pattern · Factory</title><desc>Factory pattern showing object creation, generated identifiers, and connected demo graph.</desc>
+<defs>
+  <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#17324d"/></marker>
+  <marker id="openArrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L13,7 L0,14" fill="#ffffff" stroke="#17324d" stroke-width="1.8"/></marker>
+  <marker id="diamond" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M1,7 L7,1 L13,7 L7,13 z" fill="#ffffff" stroke="#17324d" stroke-width="1.6"/></marker>
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: #172a3a; }
+    .title { font-size: 31px; font-weight: 700; letter-spacing: .1px; }
+    .subtitle { font-size: 16px; fill: #516b7d; }
+    .section { font-size: 15px; font-weight: 700; letter-spacing: 1.1px; fill: #2c5872; }
+    .node-title { font-size: 20px; font-weight: 700; }
+    .node-sub { font-size: 15px; fill: #476275; }
+    .body { font-size: 15px; }
+    .small { font-size: 13px; fill: #476275; }
+    .label { font-size: 14px; font-weight: 700; fill: #2c5872; }
+    .mono { font-family: Menlo, Consolas, monospace; font-size: 14px; }
+    .box { fill: #ffffff; stroke: #17324d; stroke-width: 2; }
+    .soft { fill: #f5f9fc; stroke: #8ca5b5; stroke-width: 1.5; }
+    .domain { fill: #e9f4fb; stroke: #24739b; stroke-width: 2; }
+    .control { fill: #f0edfa; stroke: #735a9b; stroke-width: 2; }
+    .storage { fill: #edf8f2; stroke: #328366; stroke-width: 2; }
+    .accent { fill: #fff5df; stroke: #b87517; stroke-width: 2; }
+    .rose { fill: #fff0ef; stroke: #b45b55; stroke-width: 2; }
+    .line { fill: none; stroke: #17324d; stroke-width: 2.2; }
+    .thin { fill: none; stroke: #7b93a4; stroke-width: 1.6; }
+    .dash { fill: none; stroke: #50758b; stroke-width: 1.8; stroke-dasharray: 8 6; }
+    .observe { fill: none; stroke: #735a9b; stroke-width: 2.2; stroke-dasharray: 7 5; }
+    .note { fill: #f7fbfd; stroke: #9bb2c0; stroke-width: 1.4; }
+    .pill { fill: #17324d; }
+    .pill-text { fill: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: .7px; }
+  </style>
+</defs><rect width="1600" height="900" fill="#fbfdff"/><text x="64" y="54" class="title">Pattern · Factory</text><text x="64" y="82" class="subtitle">Factories create valid domain objects and a connected demo graph without leaking construction details.</text><line x1="64" y1="106" x2="1536" y2="106" stroke="#c8d7e0" stroke-width="1.5"/><rect x="72" y="150" width="980" height="550" rx="20" fill="#f7fbfd" stroke="#b6cbd5" stroke-width="1.5"/><text x="100" y="184" class="section">CREATION BOUNDARY</text><path d="M335,320 C650,320 820,215 1160,215" class="line" marker-end="url(#arrow)"/><path d="M335,320 C650,320 820,365 1160,365" class="line" marker-end="url(#arrow)"/><path d="M335,500 C650,500 820,515 1160,515" class="line" marker-end="url(#arrow)"/><path d="M335,500 C650,500 820,665 1160,665" class="line" marker-end="url(#arrow)"/><path d="M335,320 C520,250 650,235 800,235" class="dash" marker-end="url(#arrow)"/><text x="570" y="258" class="small" text-anchor="middle">requests valid object</text><rect x="130" y="250" width="410" height="145" rx="14" class="domain"/><text x="335.0" y="282" class="node-title" text-anchor="middle">LibraryEntityFactory</text><text x="335.0" y="307" class="node-sub" text-anchor="middle">createReader · createBook</text><rect x="130" y="430" width="410" height="145" rx="14" class="accent"/><text x="335.0" y="462" class="node-title" text-anchor="middle">DemoLibraryFactory</text><text x="335.0" y="487" class="node-sub" text-anchor="middle">createGraph()</text><rect x="170" y="600" width="330" height="58" rx="10" class="soft"/><text x="335" y="636" class="mono" text-anchor="middle">UuidIdGenerator</text><rect x="1160" y="160" width="300" height="110" rx="14" class="box"/><text x="1310.0" y="192" class="node-title" text-anchor="middle">Reader</text><text x="1310.0" y="217" class="node-sub" text-anchor="middle">generated id</text><rect x="1160" y="310" width="300" height="110" rx="14" class="box"/><text x="1310.0" y="342" class="node-title" text-anchor="middle">Book</text><text x="1310.0" y="367" class="node-sub" text-anchor="middle">generated id</text><rect x="1160" y="460" width="300" height="110" rx="14" class="box"/><text x="1310.0" y="492" class="node-title" text-anchor="middle">LibraryBranch</text><text x="1310.0" y="517" class="node-sub" text-anchor="middle">generated id</text><rect x="1160" y="610" width="300" height="110" rx="14" class="rose"/><text x="1310.0" y="642" class="node-title" text-anchor="middle">Loan</text><text x="1310.0" y="667" class="node-sub" text-anchor="middle">readerId + publicationId</text><text x="800" y="760" class="label" text-anchor="middle">Factory centralizes invariants and can assemble a connected demonstration graph.</text><text x="800" y="805" class="node-title" text-anchor="middle">Reader  +  Book  +  Branch  +  Loan</text><line x1="64" y1="846" x2="1536" y2="846" stroke="#c8d7e0" stroke-width="1.2"/><rect x="64" y="864" width="14" height="14" rx="3" fill="#e9f4fb" stroke="#17324d" stroke-width="1"/><text x="86" y="876" class="small">Domain factory</text><rect x="218.0" y="864" width="14" height="14" rx="3" fill="#fff5df" stroke="#17324d" stroke-width="1"/><text x="240.0" y="876" class="small">Demo assembly</text><rect x="365.0" y="864" width="14" height="14" rx="3" fill="#ffffff" stroke="#17324d" stroke-width="1"/><text x="387.0" y="876" class="small">Created entity</text><rect x="519.0" y="864" width="14" height="14" rx="3" fill="#fff0ef" stroke="#17324d" stroke-width="1"/><text x="541.0" y="876" class="small">Association</text></svg>

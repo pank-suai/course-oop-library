@@ -1,0 +1,12 @@
+Command: typst compile --root . docs/index.typ docs/report.pdf
+Result: SUCCESS
+Pages: 28
+Page size: 595.276 x 841.89 pts (A4)
+File size: 1165737 bytes
+
+Gradle verification:
+Command: ./gradlew :docs:compileTypst --no-daemon
+Result: BUILD SUCCESSFUL, no Typst font warnings after enabling system fonts for TypstCompileTask.
+
+Visual QA:
+All 28 rendered pages were reviewed as a contact sheet; title, dense tables, diagrams, final Room UI screenshots, code appendices, and final page received zoom checks. The testing table column widths were corrected after visual inspection. No clipping, overlap, accidental blank pages, or unresolved legacy content remains.

@@ -1,0 +1,9 @@
+# Deterministic control scenario
+
+Command: `./gradlew :core:jvmTest --tests application.ControlScenarioTest --no-daemon`
+Result: `BUILD SUCCESSFUL`
+Tests: 1 passed, 0 failures, 0 errors, 0 skipped.
+
+The scenario uses a temporary Room/SQLite database, inserts the linked demonstration graph, verifies repeat-safe seeding, issues a loan, and checks that the available-copy count decreases exactly once.
+
+Note: the bundled SQLite driver can emit a non-fatal native-access warning on newer JDKs.

@@ -1,8 +1,26 @@
 # Ignore Gradle project-specific cache directory
 .gradle
+.venv-pptx/
 
 # Ignore Gradle build output directory
 build
 
 # Ignore Kotlin plugin data
 .kotlin
+
+# Local Room/SQLite files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Temporary visual-QA outputs
+artifacts/report-preview/
+artifacts/self-review/
+artifacts/self-review-final/
+presentation/quicklook/
+presentation/_svg_probe/
+docs/images/diagrams-contact.png
+docs/images/diagrams-preview-*.png

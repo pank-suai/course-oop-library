@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<title>Pattern · Strategy</title><desc>Strategy pattern with LoanPolicy interface and real book/periodical policy participants.</desc>
+<defs>
+  <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#17324d"/></marker>
+  <marker id="openArrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L13,7 L0,14" fill="#ffffff" stroke="#17324d" stroke-width="1.8"/></marker>
+  <marker id="diamond" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M1,7 L7,1 L13,7 L7,13 z" fill="#ffffff" stroke="#17324d" stroke-width="1.6"/></marker>
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: #172a3a; }
+    .title { font-size: 31px; font-weight: 700; letter-spacing: .1px; }
+    .subtitle { font-size: 16px; fill: #516b7d; }
+    .section { font-size: 15px; font-weight: 700; letter-spacing: 1.1px; fill: #2c5872; }
+    .node-title { font-size: 20px; font-weight: 700; }
+    .node-sub { font-size: 15px; fill: #476275; }
+    .body { font-size: 15px; }
+    .small { font-size: 13px; fill: #476275; }
+    .label { font-size: 14px; font-weight: 700; fill: #2c5872; }
+    .mono { font-family: Menlo, Consolas, monospace; font-size: 14px; }
+    .box { fill: #ffffff; stroke: #17324d; stroke-width: 2; }
+    .soft { fill: #f5f9fc; stroke: #8ca5b5; stroke-width: 1.5; }
+    .domain { fill: #e9f4fb; stroke: #24739b; stroke-width: 2; }
+    .control { fill: #f0edfa; stroke: #735a9b; stroke-width: 2; }
+    .storage { fill: #edf8f2; stroke: #328366; stroke-width: 2; }
+    .accent { fill: #fff5df; stroke: #b87517; stroke-width: 2; }
+    .rose { fill: #fff0ef; stroke: #b45b55; stroke-width: 2; }
+    .line { fill: none; stroke: #17324d; stroke-width: 2.2; }
+    .thin { fill: none; stroke: #7b93a4; stroke-width: 1.6; }
+    .dash { fill: none; stroke: #50758b; stroke-width: 1.8; stroke-dasharray: 8 6; }
+    .observe { fill: none; stroke: #735a9b; stroke-width: 2.2; stroke-dasharray: 7 5; }
+    .note { fill: #f7fbfd; stroke: #9bb2c0; stroke-width: 1.4; }
+    .pill { fill: #17324d; }
+    .pill-text { fill: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: .7px; }
+  </style>
+</defs><rect width="1600" height="900" fill="#fbfdff"/><text x="64" y="54" class="title">Pattern · Strategy</text><text x="64" y="82" class="subtitle">LoanPolicy encapsulates interchangeable lending rules for books and periodicals.</text><line x1="64" y1="106" x2="1536" y2="106" stroke="#c8d7e0" stroke-width="1.5"/><path d="M300,390 L520,390" class="line" marker-end="url(#arrow)"/><path d="M850,315 L1080,245" class="line" marker-end="url(#openArrow)"/><path d="M850,465 L1080,535" class="line" marker-end="url(#openArrow)"/><path d="M1260,245 L1430,245" class="line" marker-end="url(#arrow)"/><path d="M1260,535 L1430,535" class="line" marker-end="url(#arrow)"/><text x="410" y="374" class="small" text-anchor="middle">select policy</text><text x="968" y="264" class="small" text-anchor="middle">realization</text><text x="968" y="520" class="small" text-anchor="middle">realization</text><rect x="80" y="320" width="220" height="140" rx="14" class="control"/><text x="190.0" y="352" class="node-title" text-anchor="middle">LibraryService</text><text x="190.0" y="377" class="node-sub" text-anchor="middle">issue(publication)</text><rect x="520" y="290" width="330" height="200" rx="14" class="domain"/><text x="685.0" y="322" class="node-title" text-anchor="middle">LoanPolicy</text><text x="685.0" y="347" class="node-sub" text-anchor="middle">interface</text><rect x="555" y="365" width="260" height="52" rx="9" class="soft"/><text x="685" y="397" class="mono" text-anchor="middle">canIssue(context)</text><rect x="555" y="430" width="260" height="40" rx="9" class="soft"/><text x="685" y="456" class="mono" text-anchor="middle">dueDate(context)</text><rect x="1080" y="175" width="300" height="140" rx="14" class="box"/><text x="1230.0" y="207" class="node-title" text-anchor="middle">BookLoanPolicy</text><text x="1230.0" y="232" class="node-sub" text-anchor="middle">short loan · 14 days</text><rect x="1080" y="465" width="300" height="140" rx="14" class="box"/><text x="1230.0" y="497" class="node-title" text-anchor="middle">PeriodicalLoanPolicy</text><text x="1230.0" y="522" class="node-sub" text-anchor="middle">reference rules · 7 days</text><rect x="1430" y="180" width="120" height="130" rx="14" class="accent"/><text x="1490.0" y="212" class="node-title" text-anchor="middle">Loan</text><text x="1490.0" y="237" class="node-sub" text-anchor="middle">created</text><rect x="1430" y="470" width="120" height="130" rx="14" class="accent"/><text x="1490.0" y="502" class="node-title" text-anchor="middle">Loan</text><text x="1490.0" y="527" class="node-sub" text-anchor="middle">created</text><rect x="80" y="650" width="1470" height="92" rx="14" class="note"/><text x="110" y="685" class="node-title">Why Strategy?</text><text x="110" y="713" class="body">LibraryService stays unchanged when rules for a new publication type are added.</text><text x="800" y="805" class="label" text-anchor="middle">Same operation · interchangeable policy · different lending decision</text><line x1="64" y1="846" x2="1536" y2="846" stroke="#c8d7e0" stroke-width="1.2"/><rect x="64" y="864" width="14" height="14" rx="3" fill="#f0edfa" stroke="#17324d" stroke-width="1"/><text x="86" y="876" class="small">Client / service</text><rect x="232.0" y="864" width="14" height="14" rx="3" fill="#e9f4fb" stroke="#17324d" stroke-width="1"/><text x="254.0" y="876" class="small">Strategy abstraction</text><rect x="428.0" y="864" width="14" height="14" rx="3" fill="#ffffff" stroke="#17324d" stroke-width="1"/><text x="450.0" y="876" class="small">Concrete strategies</text><rect x="617.0" y="864" width="14" height="14" rx="3" fill="#fff5df" stroke="#17324d" stroke-width="1"/><text x="639.0" y="876" class="small">Resulting entity</text></svg>

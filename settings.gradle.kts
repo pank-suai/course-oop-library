@@ -1,5 +1,5 @@
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-rootProject.name = "course-algs"
+rootProject.name = "course-oop-library"
 
 
 pluginManagement {

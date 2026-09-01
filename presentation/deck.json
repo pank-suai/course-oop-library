@@ -1,0 +1,120 @@
+{
+  "size": "16:9",
+  "slides": [
+    {
+      "kind": "title",
+      "title": "Объектно-ориентированная библиотечная система",
+      "subtitle": "Курсовой проект · Room-backed SQLite · Compose Desktop",
+      "author": "В. Д. Панков · группа М412 · 2026"
+    },
+    {
+      "kind": "cards",
+      "title": "Проблема и цель",
+      "cards": [
+        {"heading": "Проблема", "text": "Библиотечные сущности, выдачи и правила должны работать как единая предметная модель."},
+        {"heading": "Цель", "text": "Создать настольное приложение с постоянным хранением, связями M:N и проверяемыми сценариями."},
+        {"heading": "Фокус", "text": "ООП-иерархия · Room 3 · атомарные операции · реактивный UI"}
+      ]
+    },
+    {
+      "kind": "requirements",
+      "title": "Требования и ограничения",
+      "items": [
+        "Иерархия сущностей: LibraryEntity, Person, Publication и конкретные типы",
+        "Связь Reader ↔ Publication через ассоциативную сущность Loan",
+        "Room 3 + SQLite: запись, закрытие и повторное открытие базы",
+        "Только Desktop JVM и Compose UI; технические ID скрыты от пользователя",
+        "Семь паттернов, диаграммы и JVM-тесты как доказательства реализации"
+      ]
+    },
+    {
+      "kind": "image",
+      "title": "Доменная модель и иерархия",
+      "image": "oop_entities.png"
+    },
+    {
+      "kind": "image",
+      "title": "Реляционная модель Room",
+      "image": "room_schema.png"
+    },
+    {
+      "kind": "image",
+      "title": "Архитектура приложения",
+      "image": "architecture_oop.png"
+    },
+    {
+      "kind": "patterns_overview",
+      "title": "Паттерны: роли в системе",
+      "items": [
+        ["Repository", "доменный контракт доступа к данным"],
+        ["MVVM", "экран, состояние и события"],
+        ["Strategy", "LoanPolicy меняет правила выдачи"],
+        ["Factory", "единое создание валидных сущностей"],
+        ["Observer", "Flow → StateFlow → Compose"],
+        ["State", "Active → Overdue → Returned"],
+        ["Facade", "RoomLibraryService скрывает координацию"]
+      ]
+    },
+    {
+      "kind": "dual_image",
+      "title": "Паттерны границ: Repository и Facade",
+      "images": ["pattern_repository.png", "pattern_facade.png"],
+      "caption": "Домен видит интерфейсы; Room-адаптеры и транзакции остаются за границей."
+    },
+    {
+      "kind": "dual_image",
+      "title": "Паттерны UI: MVVM и Observer",
+      "images": ["pattern_mvvm.png", "pattern_observer.png"],
+      "caption": "DAO Flow преобразуется в StateFlow; Compose наблюдает состояние и отправляет намерения."
+    },
+    {
+      "kind": "triple_image",
+      "title": "Паттерны домена: Strategy, Factory и State",
+      "images": ["pattern_strategy.png", "pattern_factory.png", "pattern_state.png"]
+    },
+    {
+      "kind": "transactions",
+      "title": "Транзакционные сценарии",
+      "cards": [
+        {"heading": "Выдача", "text": "Проверка → остаток −1 → Loan. Одна транзакция."},
+        {"heading": "Возврат", "text": "RETURNED + остаток +1. Повторный вызов безопасен."},
+        {"heading": "Seed / Clear", "text": "Seed повторяем. Clear all удаляет зависимости и считает строки."}
+      ]
+    },
+    {
+      "kind": "flows",
+      "title": "Пользовательские потоки",
+      "flows": [
+        ["Readers", "Поиск → создание → Delete"],
+        ["Publications", "Поиск → Book / Periodical → Delete"],
+        ["Loans", "Выбор по имени/названию → Issue / Return"],
+        ["Architecture", "Иерархии + M:N + 7 паттернов → Seed / Clear all"]
+      ],
+      "caption": "Пользователь выбирает имена и названия; технические идентификаторы генерируются внутри приложения."
+    },
+    {
+      "kind": "tests",
+      "title": "Тесты и контрольный сценарий",
+      "rows": [
+        ["core", "Domain", "4", "PASS"],
+        ["core", "Persistence", "4", "PASS"],
+        ["core", "M:N + control", "2", "PASS"],
+        ["core", "Admin", "2", "PASS"],
+        ["app", "Validation", "1", "PASS"],
+        ["app", "UI operations", "4", "PASS"]
+      ],
+      "control": "Контроль: seed repeat-safe; clear all атомарен; инвентарь согласован."
+    },
+    {
+      "kind": "conclusion",
+      "title": "Итог",
+      "items": [
+        "Room/SQLite сохраняет сущности, связи и выдачи",
+        "Repository отделяет домен от Room",
+        "Семь паттернов участвуют в production-сценариях",
+        "Compose: поиск, удаление, выдача и администрирование",
+        "Итог: проверяемая ООП-архитектура"
+      ]
+    }
+  ]
+}

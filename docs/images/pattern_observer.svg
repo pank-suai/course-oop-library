@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<title>Pattern · Observer</title><desc>Observer pattern showing DAO Flow, repository propagation, StateFlow, and screen observers.</desc>
+<defs>
+  <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#17324d"/></marker>
+  <marker id="openArrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L13,7 L0,14" fill="#ffffff" stroke="#17324d" stroke-width="1.8"/></marker>
+  <marker id="diamond" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M1,7 L7,1 L13,7 L7,13 z" fill="#ffffff" stroke="#17324d" stroke-width="1.6"/></marker>
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: #172a3a; }
+    .title { font-size: 31px; font-weight: 700; letter-spacing: .1px; }
+    .subtitle { font-size: 16px; fill: #516b7d; }
+    .section { font-size: 15px; font-weight: 700; letter-spacing: 1.1px; fill: #2c5872; }
+    .node-title { font-size: 20px; font-weight: 700; }
+    .node-sub { font-size: 15px; fill: #476275; }
+    .body { font-size: 15px; }
+    .small { font-size: 13px; fill: #476275; }
+    .label { font-size: 14px; font-weight: 700; fill: #2c5872; }
+    .mono { font-family: Menlo, Consolas, monospace; font-size: 14px; }
+    .box { fill: #ffffff; stroke: #17324d; stroke-width: 2; }
+    .soft { fill: #f5f9fc; stroke: #8ca5b5; stroke-width: 1.5; }
+    .domain { fill: #e9f4fb; stroke: #24739b; stroke-width: 2; }
+    .control { fill: #f0edfa; stroke: #735a9b; stroke-width: 2; }
+    .storage { fill: #edf8f2; stroke: #328366; stroke-width: 2; }
+    .accent { fill: #fff5df; stroke: #b87517; stroke-width: 2; }
+    .rose { fill: #fff0ef; stroke: #b45b55; stroke-width: 2; }
+    .line { fill: none; stroke: #17324d; stroke-width: 2.2; }
+    .thin { fill: none; stroke: #7b93a4; stroke-width: 1.6; }
+    .dash { fill: none; stroke: #50758b; stroke-width: 1.8; stroke-dasharray: 8 6; }
+    .observe { fill: none; stroke: #735a9b; stroke-width: 2.2; stroke-dasharray: 7 5; }
+    .note { fill: #f7fbfd; stroke: #9bb2c0; stroke-width: 1.4; }
+    .pill { fill: #17324d; }
+    .pill-text { fill: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: .7px; }
+  </style>
+</defs><rect width="1600" height="900" fill="#fbfdff"/><text x="64" y="54" class="title">Pattern · Observer</text><text x="64" y="82" class="subtitle">Room Flow becomes ViewModel StateFlow; multiple Compose screens react to the same change stream.</text><line x1="64" y1="106" x2="1536" y2="106" stroke="#c8d7e0" stroke-width="1.5"/><text x="90" y="155" class="section">SOURCE</text><text x="500" y="155" class="section">PROPAGATION</text><text x="1120" y="155" class="section">OBSERVERS</text><path d="M330,330 L495,330" class="line" marker-end="url(#arrow)"/><path d="M790,330 L955,330" class="line" marker-end="url(#arrow)"/><path d="M1150,255 C1080,215 1030,215 955,255" class="observe" marker-end="url(#arrow)"/><path d="M1150,405 C1080,370 1030,370 955,370" class="observe" marker-end="url(#arrow)"/><path d="M1150,555 C1080,520 1030,520 955,485" class="observe" marker-end="url(#arrow)"/><text x="412" y="314" class="small" text-anchor="middle">Flow&lt;List&lt;PublicationEntity&gt;&gt;</text><text x="872" y="314" class="small" text-anchor="middle">StateFlow&lt;UiState&gt;</text><text x="1070" y="205" class="small" text-anchor="middle">collectAsState()</text><rect x="90" y="260" width="240" height="140" rx="14" class="storage"/><text x="210.0" y="292" class="node-title" text-anchor="middle">PublicationDao</text><text x="210.0" y="317" class="node-sub" text-anchor="middle">Room 3</text><rect x="495" y="255" width="295" height="150" rx="14" class="storage"/><text x="642.5" y="287" class="node-title" text-anchor="middle">PublicationRepository</text><text x="642.5" y="312" class="node-sub" text-anchor="middle">maps + exposes Flow</text><rect x="955" y="255" width="300" height="230" rx="14" class="control"/><text x="1105.0" y="287" class="node-title" text-anchor="middle">LibraryViewModel</text><text x="1105.0" y="312" class="node-sub" text-anchor="middle">MutableStateFlow</text><rect x="1150" y="175" width="330" height="100" rx="14" class="domain"/><text x="1315.0" y="207" class="node-title" text-anchor="middle">PublicationsScreen</text><text x="1315.0" y="232" class="node-sub" text-anchor="middle">observer</text><rect x="1150" y="325" width="330" height="100" rx="14" class="domain"/><text x="1315.0" y="357" class="node-title" text-anchor="middle">ReadersScreen</text><text x="1315.0" y="382" class="node-sub" text-anchor="middle">observer</text><rect x="1150" y="475" width="330" height="100" rx="14" class="domain"/><text x="1315.0" y="507" class="node-title" text-anchor="middle">LoansScreen</text><text x="1315.0" y="532" class="node-sub" text-anchor="middle">observer</text><rect x="90" y="520" width="700" height="110" rx="14" class="note"/><text x="120" y="555" class="node-title">Change event</text><text x="120" y="584" class="body">INSERT / UPDATE / DELETE in SQLite</text><text x="120" y="610" class="body">→ DAO Flow emits → ViewModel updates → screens recompose</text><line x1="80" y1="690" x2="1480" y2="690" class="observe"/><text x="800" y="730" class="label" text-anchor="middle">Dashed arrows are observation subscriptions; no screen polls the database.</text><text x="800" y="805" class="node-title" text-anchor="middle">Observer = automatic propagation of persistence changes into UI state</text><line x1="64" y1="846" x2="1536" y2="846" stroke="#c8d7e0" stroke-width="1.2"/><rect x="64" y="864" width="14" height="14" rx="3" fill="#edf8f2" stroke="#17324d" stroke-width="1"/><text x="86" y="876" class="small">Persistence source</text><rect x="246.0" y="864" width="14" height="14" rx="3" fill="#f0edfa" stroke="#17324d" stroke-width="1"/><text x="268.0" y="876" class="small">State holder</text><rect x="386.0" y="864" width="14" height="14" rx="3" fill="#e9f4fb" stroke="#17324d" stroke-width="1"/><text x="408.0" y="876" class="small">Observer / UI</text><rect x="533.0" y="864" width="14" height="14" rx="3" fill="#ffffff" stroke="#17324d" stroke-width="1"/><text x="555.0" y="876" class="small">Dashed = observe</text></svg>

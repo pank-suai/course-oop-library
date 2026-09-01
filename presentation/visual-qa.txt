@@ -1,0 +1,16 @@
+Visual QA status
+================
+
+Final PowerPoint: `presentation/course-oop-library.pptx`
+
+Verification performed after installing LibreOffice 26.8.0:
+
+- `pptx_render.py` converted the complete deck through headless LibreOffice and Poppler.
+- 14/14 slides were rendered to `presentation/quicklook/slide-01.png` … `slide-14.png`.
+- A contact sheet and individual zoom checks were reviewed.
+- Initial overflow on slides 11–14 was corrected by shortening copy while preserving the 28 pt minimum.
+- Re-rendered slides 11–14 have no clipping, overlap, missing images, or unreadable text.
+- `enforce_min_font.py --min-pt 28` passes: all visible runs are at least 28 pt.
+- Read-back confirms 14 slides, 16:9 size, 17 passing tests, and no forbidden legacy terms or number placeholders.
+
+Result: PASSED — full per-slide visual review completed.

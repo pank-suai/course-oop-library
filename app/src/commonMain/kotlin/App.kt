@@ -1,13 +1,8 @@
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import ui.nav.MainNav
-import ui.theme.AppTheme
-
+import di.ApplicationContainer
+import ui.App as LibraryApp
 
 @Composable
-fun App() {
-    AppTheme {
-        MainNav()
-    }
+fun App(container: ApplicationContainer) {
+    LibraryApp(container)
 }
