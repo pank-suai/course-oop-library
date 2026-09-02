@@ -1,0 +1,72 @@
+@startuml
+left to right direction
+skinparam backgroundColor #FBFDFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classFontSize 15
+skinparam classAttributeFontSize 12
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 26
+skinparam ranksep 32
+skinparam ArrowColor #17324D
+skinparam ClassBorderColor #24739B
+skinparam ClassBackgroundColor #E9F4FB
+skinparam InterfaceBorderColor #735A9B
+skinparam InterfaceBackgroundColor #F0EDFA
+hide empty members
+
+title Паттерн Repository
+
+package "domain boundary" {
+  interface ReaderRepository {
+    +readers: Flow<List<Reader>>
+    +readersOnce(): List<Reader>
+    +findById(id): Reader?
+    +save(reader)
+    +delete(id)
+  }
+  interface PublicationRepository {
+    +publications: Flow<List<Publication>>
+    +publicationsOnce(): List<Publication>
+    +findById(id): Publication?
+    +save(publication)
+    +delete(id)
+  }
+  interface LoanRepository {
+    +loans: Flow<List<Loan>>
+    +findById(id): Loan?
+    +issue(loan, maxActiveLoansPerReader): Boolean
+    +returnLoan(id, returnedAt): Loan?
+    +activeCountForReader(readerId): Int
+    +refreshOverdue(now): Int
+  }
+}
+package "Room adapters" {
+  class RoomReaderRepository
+  class RoomPublicationRepository
+  class RoomLoanRepository
+  class LibraryDao {
+    +issueLoanAtomically(record, limit): Boolean
+    +returnLoanAtomically(id, returnedAt): LoanRecord?
+  }
+  class ReaderRecord
+  class PublicationRecord
+  class LoanRecord
+}
+
+ReaderRepository <|.. RoomReaderRepository
+PublicationRepository <|.. RoomPublicationRepository
+LoanRepository <|.. RoomLoanRepository
+RoomReaderRepository --> LibraryDao : delegates
+RoomPublicationRepository --> LibraryDao : delegates
+RoomLoanRepository --> LibraryDao : delegates
+RoomReaderRepository ..> ReaderRecord : maps
+RoomPublicationRepository ..> PublicationRecord : maps
+RoomLoanRepository ..> LoanRecord : maps
+note bottom
+  ViewModel и application layer видят только доменные интерфейсы.
+  Room Record не выходит за persistence-границу.
+end note
+@enduml

@@ -32,10 +32,24 @@ interface Publication : LibraryEntity {
 }
 
 fun validateText(value: String, field: String) {
-    require(value.isNotBlank()) { "$field must not be blank" }
+    val label = mapOf(
+        "fullName" to "Имя",
+        "address" to "Адрес",
+        "organization" to "Организация",
+        "position" to "Должность",
+        "branchId" to "Филиал",
+        "name" to "Название",
+        "title" to "Название",
+        "authors" to "Авторы",
+        "publisher" to "Издатель",
+        "readerId" to "Читатель",
+        "publicationId" to "Издание",
+        "librarianId" to "Библиотекарь",
+    )[field] ?: field
+    require(value.isNotBlank()) { "$label не должно быть пустым" }
 }
 
 fun validatePublicationCopies(totalCopies: Int, availableCopies: Int) {
-    require(totalCopies > 0) { "totalCopies must be positive" }
-    require(availableCopies in 0..totalCopies) { "availableCopies must be between 0 and totalCopies" }
+    require(totalCopies > 0) { "Общее число экземпляров должно быть положительным" }
+    require(availableCopies in 0..totalCopies) { "Доступное число экземпляров должно быть от 0 до общего числа" }
 }

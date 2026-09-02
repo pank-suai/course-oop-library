@@ -1,12 +1,17 @@
-# Final build evidence
+# Финальные результаты сборки
 
-Working directory: repository root
+Рабочий каталог: корень репозитория.
 
-Command: `./gradlew clean test build --no-daemon`
-Result: **BUILD SUCCESSFUL**
+Команда: `./gradlew clean test build --no-daemon`
 
-The command completed all requested clean, test, assemble, check, and build tasks. Final test reports contain 17 passing tests (8 XML report files; 0 failures, 0 errors, 0 skipped). Kotlin emitted only the existing deprecation warning for Material3 `TabRow`, and the bundled SQLite runtime emitted the current-JDK restricted native-access warning; neither is fatal.
+Результат: BUILD SUCCESSFUL.
 
-Control scenario:
+Команда выполнила clean, test, assemble, check и build для проекта. XML-отчёты после запуска содержат 35 успешно пройденных тестов: 17 в core и 18 в app; failures, errors и skipped отсутствуют.
+
+Контрольный сценарий:
+
 `./gradlew :core:jvmTest --tests application.ControlScenarioTest --no-daemon`
-Result: **BUILD SUCCESSFUL**
+
+Результат: BUILD SUCCESSFUL.
+
+При работе Bundled SQLite текущий JDK выводит предупреждение о native access. Оно не блокирует сборку и тестирование.

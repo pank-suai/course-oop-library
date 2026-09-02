@@ -1,0 +1,57 @@
+@startuml
+left to right direction
+skinparam backgroundColor #FBFDFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classFontSize 15
+skinparam classAttributeFontSize 12
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 26
+skinparam ranksep 34
+skinparam ArrowColor #17324D
+skinparam ClassBorderColor #24739B
+skinparam ClassBackgroundColor #E9F4FB
+skinparam InterfaceBorderColor #735A9B
+skinparam InterfaceBackgroundColor #F0EDFA
+hide empty members
+
+title Паттерн Facade: прикладные сценарии
+
+interface LibraryService {
+  +issueLoan(readerId, publicationId, librarianId, now): Loan
+  +returnLoan(loanId, now): Loan
+  +deleteReader(readerId)
+  +deletePublication(publicationId)
+  +seedDemo(): Boolean
+  +clearAll(): ClearAllResult
+}
+class RoomLibraryService {
+  -repositories: LibraryRepositoryBundle
+  -policy: LoanPolicy
+  +issueLoan(...)
+  +returnLoan(...)
+  +seedDemo()
+  +clearAll()
+}
+interface LibraryRepositoryBundle
+interface LoanPolicy
+class RoomRepositoryBundle
+class LibraryDao
+class ViewModels
+
+LibraryService <|.. RoomLibraryService
+ViewModels --> LibraryService : короткие сценарии
+RoomLibraryService --> LibraryRepositoryBundle : координирует
+RoomLibraryService --> LoanPolicy : проверяет
+LibraryRepositoryBundle <|.. RoomRepositoryBundle
+RoomRepositoryBundle --> LibraryDao
+note bottom of RoomLibraryService
+  issueLoan: поиск → policy → ACTIVE + limit
+  → decrementAvailable + insert LoanRecord атомарно.
+  returnLoan: timestamp → RETURNED
+  → incrementAvailable ровно один раз.
+  seedDemo и clearAll — транзакционные.
+end note
+@enduml

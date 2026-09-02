@@ -10,7 +10,9 @@ import domain.LoanState
 import domain.Periodical
 import domain.Publication
 import domain.Reader
+import androidx.sqlite.SQLiteException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 
 interface ReaderRepository {
@@ -45,8 +47,10 @@ interface LoanRepository {
     val loans: Flow<List<Loan>>
     suspend fun findById(id: String): Loan?
     suspend fun issue(loan: Loan): Boolean
+    suspend fun issue(loan: Loan, maxActiveLoansPerReader: Int): Boolean = issue(loan)
     suspend fun returnLoan(id: String, returnedAt: Long): Loan?
     suspend fun activeCountForReader(readerId: String): Int
+    suspend fun refreshOverdue(now: Long): Int = 0
 }
 
 interface LibraryAdministrationRepository {
@@ -62,7 +66,7 @@ interface LibraryRepositoryBundle : LibraryAdministrationRepository {
     val loans: LoanRepository
 }
 
-class ActiveLoanDeletionException(message: String) : IllegalStateException(message)
+class ActiveLoanDeletionException(message: String, cause: Throwable? = null) : IllegalStateException(message, cause)
 class InventoryException(message: String) : IllegalStateException(message)
 
 class RoomReaderRepository(private val dao: LibraryDao) : ReaderRepository {
@@ -71,9 +75,16 @@ class RoomReaderRepository(private val dao: LibraryDao) : ReaderRepository {
     override suspend fun findById(id: String): Reader? = dao.getReader(id)?.let { readerRecordToDomain(it) }
     override suspend fun save(reader: Reader) = dao.saveReader(reader.toRecord())
     override suspend fun delete(id: String) {
-        if (dao.countActiveLoansForReader(id) > 0) throw ActiveLoanDeletionException("Cannot delete a reader with active loans")
-        if (dao.countLoansForReader(id) > 0) throw ActiveLoanDeletionException("Cannot delete a reader with loan history")
-        dao.deleteReader(id)
+        try {
+            when (dao.deleteReaderIfUnused(id)) {
+                -1 -> Unit
+                0 -> throw ActiveLoanDeletionException("Нельзя удалить читателя: есть история или активные выдачи")
+            }
+        } catch (error: ActiveLoanDeletionException) {
+            throw error
+        } catch (error: SQLiteException) {
+            throw ActiveLoanDeletionException("Нельзя удалить читателя: связи с выдачами изменились", error)
+        }
     }
 }
 
@@ -95,18 +106,44 @@ class RoomPublicationRepository(private val dao: LibraryDao) : PublicationReposi
     override suspend fun findById(id: String): Publication? = dao.getPublication(id)?.let { publicationRecordToDomain(it) }
     override suspend fun save(publication: Publication) = dao.savePublication(publication.toRecord())
     override suspend fun delete(id: String) {
-        if (dao.countActiveLoansForPublication(id) > 0) throw ActiveLoanDeletionException("Cannot delete a publication with active loans")
-        if (dao.countLoansForPublication(id) > 0) throw ActiveLoanDeletionException("Cannot delete a publication with loan history")
-        dao.deletePublication(id)
+        try {
+            when (dao.deletePublicationIfUnused(id)) {
+                -1 -> Unit
+                0 -> throw ActiveLoanDeletionException("Нельзя удалить издание: есть история или активные выдачи")
+            }
+        } catch (error: ActiveLoanDeletionException) {
+            throw error
+        } catch (error: SQLiteException) {
+            throw ActiveLoanDeletionException("Нельзя удалить издание: связи с выдачами изменились", error)
+        }
     }
 }
 
 class RoomLoanRepository(private val dao: LibraryDao) : LoanRepository {
-    override val loans: Flow<List<Loan>> = dao.observeLoans().map { records -> records.map { loanRecordToDomain(it) } }
-    override suspend fun findById(id: String): Loan? = dao.getLoan(id)?.let { loanRecordToDomain(it) }
-    override suspend fun issue(loan: Loan): Boolean = dao.issueLoanAtomically(loan.toRecord())
-    override suspend fun returnLoan(id: String, returnedAt: Long): Loan? = dao.returnLoanAtomically(id, returnedAt)?.let { loanRecordToDomain(it) }
+    @OptIn(kotlin.time.ExperimentalTime::class)
+    override val loans: Flow<List<Loan>> = kotlinx.coroutines.flow.flow {
+        dao.markOverdueLoans(kotlin.time.Clock.System.now().toEpochMilliseconds())
+        emitAll(dao.observeLoans())
+    }.map { records -> records.map { loanRecordToDomain(it) } }
+
+    @OptIn(kotlin.time.ExperimentalTime::class)
+    override suspend fun findById(id: String): Loan? {
+        dao.markOverdueLoans(kotlin.time.Clock.System.now().toEpochMilliseconds())
+        return dao.getLoan(id)?.let { loanRecordToDomain(it) }
+    }
+
+    override suspend fun issue(loan: Loan): Boolean = issue(loan, Int.MAX_VALUE)
+    override suspend fun issue(loan: Loan, maxActiveLoansPerReader: Int): Boolean {
+        if (loan.state != LoanState.Active) return false
+        require(maxActiveLoansPerReader > 0)
+        return dao.issueLoanAtomically(loan.toRecord(), maxActiveLoansPerReader)
+    }
+
+    override suspend fun returnLoan(id: String, returnedAt: Long): Loan? =
+        dao.returnLoanAtomically(id, returnedAt)?.let { loanRecordToDomain(it) }
+
     override suspend fun activeCountForReader(readerId: String): Int = dao.countActiveLoans(readerId)
+    override suspend fun refreshOverdue(now: Long): Int = dao.markOverdueLoans(now)
 }
 
 class RoomRepositoryBundle(val database: LibraryDatabase) : LibraryRepositoryBundle {
@@ -149,20 +186,20 @@ private fun branchRecordToDomain(record: BranchRecord) = LibraryBranch(record.id
 private fun Publication.toRecord() = when (this) {
     is Book -> PublicationRecord(id, "BOOK", title, authors, publisher, publicationYear, isbn, null, totalCopies, availableCopies, branchId)
     is Periodical -> PublicationRecord(id, "PERIODICAL", title, authors, publisher, publicationYear, null, issueNumber, totalCopies, availableCopies, branchId)
-    else -> error("Unsupported publication type")
+    else -> error("Неподдерживаемый тип издания")
 }
 private fun publicationRecordToDomain(record: PublicationRecord): Publication = when (record.kind) {
     "BOOK" -> Book(record.id, record.title, record.authors, record.publisher, record.publicationYear, record.totalCopies, record.availableCopies, record.branchId, record.isbn)
     "PERIODICAL" -> Periodical(record.id, record.title, record.authors, record.publisher, record.publicationYear, record.totalCopies, record.availableCopies, record.branchId, record.issueNumber ?: 1)
-    else -> error("Unknown publication kind: ${record.kind}")
+    else -> error("Неизвестный тип издания: ${record.kind}")
 }
 private fun Loan.toRecord() = LoanRecord(id, readerId, publicationId, librarianId, issuedAt, dueAt, (state as? LoanState.Returned)?.returnedAt, state.status)
 private fun loanRecordToDomain(record: LoanRecord): Loan {
     val state = when (record.status) {
         "ACTIVE" -> LoanState.Active
         "OVERDUE" -> LoanState.Overdue
-        "RETURNED" -> LoanState.Returned(record.returnedAt ?: error("Returned loan has no timestamp"))
-        else -> error("Unknown loan status: ${record.status}")
+        "RETURNED" -> LoanState.Returned(record.returnedAt ?: error("У возвращённой выдачи нет даты возврата"))
+        else -> error("Неизвестный статус выдачи: ${record.status}")
     }
     return Loan(record.id, record.readerId, record.publicationId, record.librarianId, record.issuedAt, record.dueAt, state)
 }

@@ -1,6 +1,9 @@
 package domain
 
 interface LoanPolicy {
+    val maxActiveLoansPerReader: Int
+        get() = Int.MAX_VALUE
+
     fun canIssue(reader: Reader, publication: Publication, activeLoansForReader: Int): PolicyDecision
     fun dueAt(issuedAt: Long, publication: Publication): Long
 }
@@ -8,7 +11,7 @@ interface LoanPolicy {
 data class PolicyDecision(val isAllowed: Boolean, val reason: String? = null)
 
 class DefaultLoanPolicy(
-    private val maxActiveLoansPerReader: Int = 5,
+    override val maxActiveLoansPerReader: Int = 5,
     private val bookLoanDays: Long = 21,
     private val periodicalLoanDays: Long = 7,
 ) : LoanPolicy {
@@ -24,9 +27,9 @@ class DefaultLoanPolicy(
         activeLoansForReader: Int,
     ): PolicyDecision = when {
         activeLoansForReader >= maxActiveLoansPerReader ->
-            PolicyDecision(false, "Reader has reached the active loan limit")
+            PolicyDecision(false, "Читатель достиг лимита активных выдач")
         publication.availableCopies <= 0 ->
-            PolicyDecision(false, "Publication has no available copies")
+            PolicyDecision(false, "У издания нет доступных экземпляров")
         else -> PolicyDecision(true)
     }
 

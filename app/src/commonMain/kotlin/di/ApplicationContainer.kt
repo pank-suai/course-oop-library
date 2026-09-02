@@ -9,10 +9,20 @@ import persistence.openDefaultDatabase
 class ApplicationContainer(
     database: LibraryDatabase = openDefaultDatabase(),
 ) : AutoCloseable {
+    private val closeables = LinkedHashSet<AutoCloseable>()
+    private var closed = false
     val repositories: RoomRepositoryBundle = RoomRepositoryBundle(database)
     val service: RoomLibraryService = RoomLibraryService(repositories)
 
+    fun register(closeable: AutoCloseable) {
+        if (closed) closeable.close() else closeables += closeable
+    }
+
     override fun close() {
+        if (closed) return
+        closed = true
+        closeables.toList().asReversed().forEach(AutoCloseable::close)
+        closeables.clear()
         repositories.database.close()
     }
 }

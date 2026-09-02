@@ -1,0 +1,27 @@
+@startuml
+left to right direction
+skinparam backgroundColor transparent
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 46
+skinparam rectangleFontSize 50
+skinparam ArrowFontSize 42
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 50
+skinparam RectangleBorderColor #005AAA
+skinparam RectangleBackgroundColor #EAF4FC
+skinparam ArrowColor #17324D
+
+rectangle "branches" as branches
+rectangle "readers" as readers
+rectangle "librarians" as librarians
+rectangle "publications\ntotal · available" as publications
+rectangle "loans\n3 FK · status · dates" as loans
+
+branches --> librarians
+branches --> publications
+readers --> loans
+librarians --> loans
+publications --> loans
+@enduml

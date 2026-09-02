@@ -11,6 +11,7 @@ typst {
 
 tasks.withType<TypstCompileTask>().configureEach {
     useSystemFonts = true
+    root.set(rootProject.layout.projectDirectory.asFile.absolutePath)
 }
 
 val main by typst.sourceSets.registering {

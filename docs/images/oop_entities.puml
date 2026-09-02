@@ -1,0 +1,81 @@
+@startuml
+left to right direction
+skinparam backgroundColor #FBFDFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classFontSize 15
+skinparam classAttributeFontSize 13
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 28
+skinparam ranksep 34
+skinparam ArrowColor #17324D
+skinparam ClassBorderColor #24739B
+skinparam ClassBackgroundColor #E9F4FB
+skinparam InterfaceBorderColor #735A9B
+skinparam InterfaceBackgroundColor #F0EDFA
+skinparam NoteBackgroundColor #FFF5DF
+skinparam NoteBorderColor #B87517
+hide empty members
+
+title Иерархия сущностей предметной области
+
+interface LibraryEntity {
+  +id: String
+}
+interface Person {
+  +fullName: String
+}
+interface Publication {
+  +title: String
+  +authors: String
+  +publisher: String
+  +publicationYear: Int
+  +totalCopies: Int
+  +availableCopies: Int
+  +branchId: String
+}
+class Reader {
+  +birthYear: Int
+  +address: String
+  +organization: String
+}
+class Librarian {
+  +position: String
+  +branchId: String
+}
+class LibraryBranch {
+  +name: String
+  +address: String
+}
+class Book {
+  +isbn: String?
+}
+class Periodical {
+  +issueNumber: Int
+}
+class Loan {
+  +readerId: String
+  +publicationId: String
+  +librarianId: String
+  +issuedAt: Long
+  +dueAt: Long
+  +state: LoanState
+}
+
+LibraryEntity <|-- Person
+LibraryEntity <|-- Publication
+LibraryEntity <|-- LibraryBranch
+LibraryEntity <|-- Loan
+Person <|-- Reader
+Person <|-- Librarian
+Publication <|-- Book
+Publication <|-- Periodical
+
+note right of Loan
+  Ассоциативная сущность M:N.
+  Жизненный цикл: Active,
+  Overdue, Returned(returnedAt).
+end note
+@enduml

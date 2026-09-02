@@ -11,7 +11,7 @@ fun main() {
                 container.close()
                 exitApplication()
             },
-            title = "Course OOP Library",
+            title = "Библиотека курса ООП",
         ) {
             App(container)
         }

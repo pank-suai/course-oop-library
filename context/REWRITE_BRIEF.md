@@ -43,4 +43,4 @@ Implement vertical slices and observe each new test fail before production code:
 ./gradlew :app:run
 ```
 
-Also scan tracked text files for forbidden old terms, compile `docs/index.typ` to `docs/report.pdf`, regenerate/read/render the PPTX, and perform visual checks before publication.
+Also scan tracked text files for forbidden old terms, compile `docs/index.typ` to `docs/report.pdf`, compile `presentation/main.typ` to the Typst/Polylux PDF, render every page/slide, and perform visual checks before publication.

@@ -9,10 +9,10 @@
 | R05 | Графическое приложение | Compose Desktop `app` | Сборка, контрольный запуск, скриншоты |
 | R06 | Запрет web | Удалены JS/WASM targets/resources и Pages deployment | Поиск конфигурации + список Gradle tasks |
 | R07 | Три категории классов | сущности в core, управляющие сервисы/ViewModel, интерфейсные Compose-классы | Общая диаграмма и раздел 2 |
-| R08 | Диаграммы | `docs/images/*.svg`: сущности, паттерны, общая | Наличие, встраивание и визуальная проверка |
+| R08 | Диаграммы | десять пар `docs/images/*.puml` и `docs/images/*.svg`: сущности, паттерны, архитектура и Room | Проверка PlantUML, встраивание и визуальный просмотр всех схем |
 | R09 | Тестирование | JVM unit/integration tests, Room persistence test, сценарий запуска | `./gradlew test` + отчёты |
 | R10 | Пояснительная записка | `docs/index.typ`, `docs/report.pdf` | Компиляция Typst + визуальная проверка страниц |
-| R11 | Презентация 10–15 слайдов | `presentation/course-oop-library.pptx` | 10–15 слайдов, outline, рендер и визуальный просмотр |
+| R11 | Презентация 10–15 слайдов | `presentation/main.typ`, `presentation/course-oop-library.pdf` | Сборка Typst/Polylux, проверка 16:9, текста от 28 pt и визуальный просмотр всех слайдов |
 | R12 | Постоянное хранение Room 3 | Room entities/DAO/database/repositories, SQLite-файл | Запись → закрытие → повторное открытие → чтение |
 | R13 | Убрать наследие алгоритмического задания | Нет BookCipher/ReaderTicket/варианта 624/самописных структур | Поиск по репозиторию + проверка UI и README |
 

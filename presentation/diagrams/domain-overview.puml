@@ -1,0 +1,30 @@
+@startuml
+top to bottom direction
+skinparam backgroundColor transparent
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 46
+skinparam rectangleFontSize 50
+skinparam ArrowFontSize 42
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 55
+skinparam RectangleBorderColor #005AAA
+skinparam RectangleBackgroundColor #EAF4FC
+skinparam ArrowColor #17324D
+
+rectangle "LibraryEntity" as E
+rectangle "Person\nReader · Librarian" as P
+rectangle "Publication\nBook · Periodical" as Pub
+rectangle "Loan\nReader ↔ Publication · M:N" as Loan
+rectangle "LibraryBranch" as Branch
+
+P -[hidden]right-> Pub
+Loan -[hidden]right-> Branch
+E -down-> P
+E -down-> Pub
+E -down-> Loan
+E -down-> Branch
+P -down-> Loan
+Pub -down-> Loan
+@enduml

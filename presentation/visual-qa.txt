@@ -1,16 +1,16 @@
-Visual QA status
-================
+Финальная визуальная проверка презентации Typst/Polylux
+=========================================================
 
-Final PowerPoint: `presentation/course-oop-library.pptx`
+Исходник: `presentation/main.typ`
+PDF: `presentation/course-oop-library.pdf`
 
-Verification performed after installing LibreOffice 26.8.0:
+Команда сборки:
+`typst compile --root . presentation/main.typ presentation/course-oop-library.pdf`
 
-- `pptx_render.py` converted the complete deck through headless LibreOffice and Poppler.
-- 14/14 slides were rendered to `presentation/quicklook/slide-01.png` … `slide-14.png`.
-- A contact sheet and individual zoom checks were reviewed.
-- Initial overflow on slides 11–14 was corrected by shortening copy while preserving the 28 pt minimum.
-- Re-rendered slides 11–14 have no clipping, overlap, missing images, or unreadable text.
-- `enforce_min_font.py --min-pt 28` passes: all visible runs are at least 28 pt.
-- Read-back confirms 14 slides, 16:9 size, 17 passing tests, and no forbidden legacy terms or number placeholders.
+Результат: 15 слайдов, 841.890 × 473.563 pt, формат 16:9.
 
-Result: PASSED — full per-slide visual review completed.
+Все 15 слайдов отрендерированы через Poppler в `artifacts/presentation-qa/slides/slide-01.png` … `slide-15.png`; общий контактный лист находится в `artifacts/presentation-qa/contact-sheet.png`. Проверены слайды 1–15: титульный слайд, постановка задачи, требования, крупношрифтовые PlantUML-представления домена и Room, карточки архитектуры и паттернов, транзакционные сценарии, снимки UI, тесты и заключительный слайд. Отдельно в нативном размере проверены все переработанные слайды 4–12, а также слайды 2, 13, 14 и 15.
+
+Текст шаблона, карточек и упрощённых PlantUML-схем имеет размер не меньше 28 pt; растровые снимки демонстрируют реальный UI в штатном масштабе. Детальные отчётные диаграммы на слайдах заменены согласованными крупношрифтовыми представлениями и карточками, чтобы исключить мелкие подписи. Повторный рендер подтвердил отсутствие clipping, overlap, лишнего пустого слайда и проблем с контрастом.
+
+Итог: ПРОЙДЕНО — единственный финальный конвейер Typst/Polylux визуально проверен по всем 15 слайдам.

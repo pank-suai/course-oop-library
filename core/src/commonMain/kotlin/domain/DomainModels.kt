@@ -10,7 +10,7 @@ data class Reader(
 ) : Person {
     init {
         validateText(fullName, "fullName")
-        require(birthYear in 1800..2100) { "birthYear is outside the supported range" }
+        require(birthYear in 1800..2100) { "Год рождения вне поддерживаемого диапазона" }
         validateText(address, "address")
         validateText(organization, "organization")
     }
@@ -59,7 +59,7 @@ data class Book(
         validateText(authors, "authors")
         validateText(publisher, "publisher")
         validateText(branchId, "branchId")
-        require(publicationYear in 1450..2100) { "publicationYear is outside the supported range" }
+        require(publicationYear in 1450..2100) { "Год издания вне поддерживаемого диапазона" }
         validatePublicationCopies(totalCopies, availableCopies)
     }
 }
@@ -81,8 +81,8 @@ data class Periodical(
         validateText(authors, "authors")
         validateText(publisher, "publisher")
         validateText(branchId, "branchId")
-        require(publicationYear in 1450..2100) { "publicationYear is outside the supported range" }
-        require(issueNumber > 0) { "issueNumber must be positive" }
+        require(publicationYear in 1450..2100) { "Год издания вне поддерживаемого диапазона" }
+        require(issueNumber > 0) { "Номер выпуска должен быть положительным" }
         validatePublicationCopies(totalCopies, availableCopies)
     }
 }
@@ -108,7 +108,7 @@ sealed interface LoanState {
 
 fun LoanState.returnAt(timestamp: Long): LoanState = when (this) {
     LoanState.Active, LoanState.Overdue -> LoanState.Returned(timestamp)
-    is LoanState.Returned -> error("Loan has already been returned")
+    is LoanState.Returned -> error("Выдача уже возвращена")
 }
 
 data class Loan(
@@ -124,6 +124,6 @@ data class Loan(
         validateText(readerId, "readerId")
         validateText(publicationId, "publicationId")
         validateText(librarianId, "librarianId")
-        require(dueAt >= issuedAt) { "dueAt must not precede issuedAt" }
+        require(dueAt >= issuedAt) { "Дата возврата не может быть раньше даты выдачи" }
     }
 }

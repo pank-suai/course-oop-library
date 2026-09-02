@@ -1,0 +1,87 @@
+@startuml
+left to right direction
+skinparam backgroundColor #FBFDFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classFontSize 15
+skinparam classAttributeFontSize 12
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 28
+skinparam ranksep 36
+skinparam ArrowColor #17324D
+skinparam ClassBorderColor #24739B
+skinparam ClassBackgroundColor #E9F4FB
+skinparam InterfaceBorderColor #735A9B
+skinparam InterfaceBackgroundColor #F0EDFA
+hide empty members
+
+title Архитектура OOP-приложения
+
+package "UI" #E9F4FB {
+  class App
+  class LibraryScreen
+  class ReadersViewModel
+  class PublicationsViewModel
+  class LoansViewModel
+  class AdministrationViewModel
+  class ApplicationContainer
+}
+package "application" #F0EDFA {
+  interface LibraryService
+  class RoomLibraryService
+}
+package "domain" #EDF8F2 {
+  interface LibraryEntity
+  class Reader
+  interface Publication
+  class Book
+  class Periodical
+  class Loan
+  interface LoanPolicy
+  class DefaultLoanPolicy
+  class LibraryEntityFactory
+}
+package "persistence" #FFF5DF {
+  interface LibraryRepositoryBundle
+  class RoomRepositoryBundle
+  class LibraryDao
+  class LibraryDatabase
+  class ReaderRecord
+  class PublicationRecord
+  class LoanRecord
+}
+class SQLite
+
+App --> LibraryScreen
+LibraryScreen --> ReadersViewModel
+LibraryScreen --> PublicationsViewModel
+LibraryScreen --> LoansViewModel
+LibraryScreen --> AdministrationViewModel
+ApplicationContainer --> RoomLibraryService
+ReadersViewModel --> LibraryService
+PublicationsViewModel --> LibraryService
+LoansViewModel --> LibraryService
+AdministrationViewModel --> LibraryService
+RoomLibraryService ..|> LibraryService
+RoomLibraryService --> LibraryRepositoryBundle
+RoomLibraryService --> LoanPolicy
+DefaultLoanPolicy ..|> LoanPolicy
+LibraryEntityFactory ..> LibraryEntity : creates
+LibraryRepositoryBundle <|.. RoomRepositoryBundle
+RoomRepositoryBundle --> LibraryDao
+LibraryDao --> LibraryDatabase
+LibraryDatabase --> SQLite
+LibraryDao ..> ReaderRecord
+LibraryDao ..> PublicationRecord
+LibraryDao ..> LoanRecord
+ReaderRecord ..> Reader : maps
+PublicationRecord ..> Publication : maps
+LoanRecord ..> Loan : maps
+
+note bottom
+  UI → application → domain abstractions → persistence adapters → SQLite.
+  Технические id остаются внутри слоёв и не вводятся пользователем.
+end note
+@enduml

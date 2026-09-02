@@ -1,26 +1,26 @@
-# Final test evidence
+# Финальные результаты тестирования
 
-Working directory: repository root
+Рабочий каталог: корень репозитория.
 
-Command: `./gradlew clean test build --no-daemon`
-Result: `BUILD SUCCESSFUL`
+Команда: `./gradlew clean test build --no-daemon`
 
-Programmatically summed after the final clean build from all current `app/build/test-results/jvmTest/TEST-*.xml` and `core/build/test-results/jvmTest/TEST-*.xml` files: **17 tests, 0 failures, 0 errors, 0 skipped across 8 XML files**.
+Результат: BUILD SUCCESSFUL.
 
-| Module | Test class/file | Tests | Result |
+После финального clean-прогона XML-отчёты программно просуммированы: 35 тестов, 0 failures, 0 errors, 0 skipped в 10 XML-файлах. Разбиение: core — 17 тестов, app — 18 тестов.
+
+| Модуль | Тестовый класс | Тестов | Итог |
 |---|---|---:|---|
-| core | `core/src/commonTest/kotlin/DomainRewriteTest.kt` | 4 | PASS |
-| core | `core/src/jvmTest/kotlin/persistence/RoomPersistenceTest.kt` | 2 | PASS |
-| core | `core/src/jvmTest/kotlin/persistence/RoomInvariantTest.kt` | 2 | PASS |
-| core | `core/src/jvmTest/kotlin/persistence/ManyToManyTest.kt` | 1 | PASS |
-| core | `core/src/jvmTest/kotlin/application/ControlScenarioTest.kt` | 1 | PASS |
-| core | `core/src/jvmTest/kotlin/application/RoomAdministrationTest.kt` | 2 | PASS |
-| app | `app/src/commonTest/kotlin/ui/ViewModelValidationTest.kt` | 1 | PASS |
-| app | `app/src/commonTest/kotlin/ui/ViewModelOperationsTest.kt` | 4 | PASS |
+| core | DomainRewriteTest | 4 | Успешно |
+| core | RoomPersistenceTest | 2 | Успешно |
+| core | RoomInvariantTest | 2 | Успешно |
+| core | ManyToManyTest | 1 | Успешно |
+| core | ReviewRegressionTest | 5 | Успешно |
+| core | ControlScenarioTest | 1 | Успешно |
+| core | RoomAdministrationTest | 2 | Успешно |
+| app | ViewModelValidationTest | 1 | Успешно |
+| app | ViewModelOperationsTest | 4 | Успешно |
+| app | ViewModelLifecycleAndErrorTest | 13 | Успешно |
 
-The control scenario was also run explicitly after implementation:
-`./gradlew :core:jvmTest --tests application.ControlScenarioTest --no-daemon` → `BUILD SUCCESSFUL`.
+Контрольный сценарий также запускался отдельно командой `./gradlew :core:jvmTest --tests application.ControlScenarioTest --no-daemon`; результат BUILD SUCCESSFUL. После этого полный clean test build был выполнен повторно, поэтому сохранённый набор XML соответствует всем 35 тестам.
 
-The final full clean build was rerun after that filtered control run, restoring the complete 17-test XML set before this count was generated.
-
-Bundled SQLite emits a current-JDK native-access warning during tests. It is non-fatal and does not change the pass result.
+Во время запуска Bundled SQLite выводит предупреждение текущего JDK о native access. Предупреждение не является ошибкой и не меняет результат.

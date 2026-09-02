@@ -6,7 +6,6 @@ import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Transaction
 import androidx.room3.Upsert
-import domain.LoanState
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -31,6 +30,13 @@ interface LibraryDao {
 
     @Query("SELECT COUNT(*) FROM loans WHERE readerId = :id")
     suspend fun countLoansForReader(id: String): Int
+
+    @Transaction
+    suspend fun deleteReaderIfUnused(id: String): Int {
+        if (getReader(id) == null) return -1
+        if (countLoansForReader(id) > 0) return 0
+        return deleteReader(id)
+    }
 
     @Query("SELECT * FROM librarians ORDER BY fullName")
     fun observeLibrarians(): Flow<List<LibrarianRecord>>
@@ -65,8 +71,49 @@ interface LibraryDao {
     @Query("SELECT * FROM publications WHERE id = :id")
     suspend fun getPublication(id: String): PublicationRecord?
 
-    @Upsert
-    suspend fun savePublication(record: PublicationRecord)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertPublicationIfAbsent(record: PublicationRecord): Long
+
+    @Query("""
+        UPDATE publications SET
+            kind = :kind,
+            title = :title,
+            authors = :authors,
+            publisher = :publisher,
+            publicationYear = :publicationYear,
+            isbn = :isbn,
+            issueNumber = :issueNumber,
+            branchId = :branchId
+        WHERE id = :id
+    """)
+    suspend fun updatePublicationMetadata(
+        id: String,
+        kind: String,
+        title: String,
+        authors: String,
+        publisher: String,
+        publicationYear: Int,
+        isbn: String?,
+        issueNumber: Int?,
+        branchId: String,
+    ): Int
+
+    @Transaction
+    suspend fun savePublication(record: PublicationRecord) {
+        if (insertPublicationIfAbsent(record) == -1L) {
+            updatePublicationMetadata(
+                record.id,
+                record.kind,
+                record.title,
+                record.authors,
+                record.publisher,
+                record.publicationYear,
+                record.isbn,
+                record.issueNumber,
+                record.branchId,
+            )
+        }
+    }
 
     @Query("UPDATE publications SET availableCopies = availableCopies - 1 WHERE id = :publicationId AND availableCopies > 0")
     suspend fun decrementAvailable(publicationId: String): Int
@@ -83,6 +130,13 @@ interface LibraryDao {
     @Query("SELECT COUNT(*) FROM loans WHERE publicationId = :id")
     suspend fun countLoansForPublication(id: String): Int
 
+    @Transaction
+    suspend fun deletePublicationIfUnused(id: String): Int {
+        if (getPublication(id) == null) return -1
+        if (countLoansForPublication(id) > 0) return 0
+        return deletePublication(id)
+    }
+
     @Query("SELECT * FROM loans ORDER BY issuedAt DESC")
     fun observeLoans(): Flow<List<LoanRecord>>
 
@@ -95,6 +149,9 @@ interface LibraryDao {
     @Query("SELECT COUNT(*) FROM loans WHERE readerId = :readerId AND returnedAt IS NULL")
     suspend fun countActiveLoans(readerId: String): Int
 
+    @Query("UPDATE loans SET status = 'OVERDUE' WHERE status = 'ACTIVE' AND returnedAt IS NULL AND dueAt < :now")
+    suspend fun markOverdueLoans(now: Long): Int
+
     @Insert
     suspend fun insertLoan(record: LoanRecord)
 
@@ -102,19 +159,26 @@ interface LibraryDao {
     suspend fun markReturned(loanId: String, returnedAt: Long): Int
 
     @Transaction
-    suspend fun issueLoanAtomically(record: LoanRecord): Boolean {
+    suspend fun issueLoanAtomically(record: LoanRecord, maxActiveLoansPerReader: Int): Boolean {
+        if (record.status != "ACTIVE" || record.returnedAt != null) return false
+        if (countActiveLoans(record.readerId) >= maxActiveLoansPerReader) return false
         if (decrementAvailable(record.publicationId) != 1) return false
         insertLoan(record)
         return true
     }
 
     @Transaction
+    suspend fun issueLoanAtomically(record: LoanRecord): Boolean =
+        issueLoanAtomically(record, Int.MAX_VALUE)
+
+    @Transaction
     suspend fun returnLoanAtomically(loanId: String, returnedAt: Long): LoanRecord? {
         val current = getLoan(loanId) ?: return null
+        require(returnedAt >= current.issuedAt) { "Дата возврата не может быть раньше даты выдачи" }
         if (current.returnedAt != null) return current
         if (markReturned(loanId, returnedAt) != 1) return getLoan(loanId)
         if (incrementAvailable(current.publicationId) != 1) {
-            error("Publication inventory invariant violated")
+            error("Нарушен инвариант складского остатка издания")
         }
         return getLoan(loanId)
     }
@@ -171,7 +235,7 @@ interface LibraryDao {
         saveLibrarian(librarian)
         readers.forEach { saveReader(it) }
         publications.forEach { savePublication(it) }
-        if (!issueLoanAtomically(loan)) error("Unable to issue demo loan; transaction rolled back")
+        if (!issueLoanAtomically(loan)) error("Не удалось оформить демонстрационную выдачу; транзакция отменена")
         return true
     }
 }

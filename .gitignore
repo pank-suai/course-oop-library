@@ -18,9 +18,11 @@ build
 
 # Temporary visual-QA outputs
 artifacts/report-preview/
+artifacts/report-qa/
+artifacts/presentation-qa/
+artifacts/diagram-qa/
 artifacts/self-review/
 artifacts/self-review-final/
-presentation/quicklook/
 presentation/_svg_probe/
 docs/images/diagrams-contact.png
 docs/images/diagrams-preview-*.png

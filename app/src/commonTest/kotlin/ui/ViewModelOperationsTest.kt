@@ -73,13 +73,13 @@ class ViewModelOperationsTest {
     @Test
     fun readerDeleteSurfacesActiveLoanError() = runBlocking {
         val repository = FakeReaderRepository(listOf(Reader("reader-ada", "Ada Lovelace", 1815, "London", "Society")))
-        val service = FakeLibraryService().also { it.readerDeletionError = ActiveLoanDeletionException("Cannot delete reader: active loans exist") }
+        val service = FakeLibraryService().also { it.readerDeletionError = ActiveLoanDeletionException("Нельзя удалить читателя: есть активные выдачи") }
         val vm = ReadersViewModel(repository, service = service, scope = testScope())
 
         vm.delete(repository.values.value.single())
         val state = vm.state.first { it.error != null }
 
-        assertEquals("Cannot delete reader: active loans exist", state.error)
+        assertEquals("Нельзя удалить читателя: есть активные выдачи", state.error)
     }
 
     private suspend fun waitUntil(predicate: () -> Boolean) {

@@ -40,7 +40,7 @@ requirements:
   - id: R10
     text: "Подготовить пояснительную записку установленной структуры."
   - id: R11
-    text: "Подготовить презентацию PowerPoint на 10–15 слайдов, шрифт не менее 28 pt."
+    text: "Подготовить презентацию Typst/Polylux на 10–15 слайдов с итоговым PDF и текстом не менее 28 pt."
 constraints:
   - "Язык и существующий стек сохраняются: Kotlin, Compose Desktop, Gradle Kotlin DSL."
   - "JS/WASM и GitHub Pages не допускаются в новой версии."
@@ -58,7 +58,6 @@ deliverables:
     source: "docs/index.typ"
     compiled: "docs/report.pdf"
     report_sections:
-      - "Титульный лист"
       - "Задание на курсовое проектирование"
       - "Содержание"
       - "Введение"
@@ -80,7 +79,8 @@ deliverables:
       - "Список использованных источников"
       - "Приложения с полным кодом"
   presentation:
-    - "presentation/course-oop-library.pptx"
+    - "presentation/main.typ"
+    - "presentation/course-oop-library.pdf"
   evidence:
     - "artifacts/test-results.txt"
     - "artifacts/build-results.txt"

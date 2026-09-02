@@ -1,0 +1,84 @@
+@startuml
+left to right direction
+skinparam backgroundColor #FBFDFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classFontSize 15
+skinparam classAttributeFontSize 12
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 38
+skinparam ArrowColor #17324D
+skinparam EntityBorderColor #24739B
+skinparam EntityBackgroundColor #E9F4FB
+skinparam NoteBackgroundColor #FFF5DF
+skinparam NoteBorderColor #B87517
+hide methods
+
+title Схема Room / SQLite
+
+entity readers {
+  * id: TEXT <<PK>>
+  --
+  fullName: TEXT
+  birthYear: INTEGER
+  address: TEXT
+  organization: TEXT
+}
+entity branches {
+  * id: TEXT <<PK>>
+  --
+  name: TEXT
+  address: TEXT
+}
+entity librarians {
+  * id: TEXT <<PK>>
+  --
+  fullName: TEXT
+  position: TEXT
+  branchId: TEXT <<FK>>
+}
+entity publications {
+  * id: TEXT <<PK>>
+  --
+  kind: TEXT
+  title: TEXT
+  authors: TEXT
+  publisher: TEXT
+  publicationYear: INTEGER
+  isbn: TEXT?
+  issueNumber: INTEGER?
+  totalCopies: INTEGER
+  availableCopies: INTEGER
+  branchId: TEXT <<FK>>
+}
+entity loans {
+  * id: TEXT <<PK>>
+  --
+  readerId: TEXT <<FK>>
+  publicationId: TEXT <<FK>>
+  librarianId: TEXT <<FK>>
+  issuedAt: INTEGER
+  dueAt: INTEGER
+  returnedAt: INTEGER?
+  status: TEXT
+}
+
+branches ||--o{ librarians
+branches ||--o{ publications
+readers ||--o{ loans
+publications ||--o{ loans
+librarians ||--o{ loans
+
+note bottom
+  Reader 0..* ↔ 0..* Publication выражена таблицей loans.
+  Поля связей: branchId, readerId, publicationId, librarianId.
+  Все внешние ключи используют onDelete = RESTRICT.
+  issueLoanAtomically: ACTIVE + лимит + availableCopies > 0.
+  returnLoanAtomically: RETURNED + проверка времени + остаток +1 один раз.
+  markOverdueLoans: ACTIVE → OVERDUE при dueAt < now.
+  savePublication(existing): метаданные без перезаписи totalCopies и availableCopies.
+end note
+@enduml

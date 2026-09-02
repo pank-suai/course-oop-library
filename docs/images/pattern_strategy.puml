@@ -1,0 +1,50 @@
+@startuml
+left to right direction
+skinparam backgroundColor #FBFDFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classFontSize 15
+skinparam classAttributeFontSize 12
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 28
+skinparam ranksep 34
+skinparam ArrowColor #17324D
+skinparam ClassBorderColor #24739B
+skinparam ClassBackgroundColor #E9F4FB
+skinparam InterfaceBorderColor #735A9B
+skinparam InterfaceBackgroundColor #F0EDFA
+hide empty members
+
+title Паттерн Strategy: политика выдачи
+
+class RoomLibraryService {
+  -policy: LoanPolicy
+  +issueLoan(readerId, publicationId, librarianId, now): Loan
+  +returnLoan(loanId, now): Loan
+}
+interface LoanPolicy {
+  +maxActiveLoansPerReader: Int
+  +canIssue(reader, publication, activeLoansForReader): PolicyDecision
+  +dueAt(issuedAt, publication): Long
+}
+class DefaultLoanPolicy {
+  +maxActiveLoansPerReader = 5
+  -bookLoanDays = 21
+  -periodicalLoanDays = 7
+  +canIssue(...): PolicyDecision
+  +dueAt(...): Long
+}
+class Book
+class Periodical
+
+RoomLibraryService --> LoanPolicy : delegates
+LoanPolicy <|.. DefaultLoanPolicy
+DefaultLoanPolicy --> Book : 21 дней
+DefaultLoanPolicy --> Periodical : 7 дней
+note bottom of DefaultLoanPolicy
+  canIssue проверяет лимит активных выдач
+  и наличие экземпляра.
+end note
+@enduml
