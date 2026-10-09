@@ -1,0 +1,30 @@
+@startuml
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 48
+skinparam classFontSize 48
+skinparam classAttributeIconSize 0
+skinparam nodesep 12
+skinparam ranksep 16
+hide empty members
+hide circle
+top to bottom direction
+interface "Объект библиотеки" as LibraryEntity
+interface "Человек" as Person
+interface "Издание" as Publication
+class "Читатель" as Reader
+class "Библиотекарь" as Librarian
+class "Книга" as Book
+class "Периодика" as Periodical
+class "Филиал" as LibraryBranch
+class "Выдача" as Loan
+LibraryEntity <|-- Person
+LibraryEntity <|-- Publication
+Person <|.. Reader
+Person <|.. Librarian
+Publication <|.. Book
+Publication <|.. Periodical
+LibraryEntity <|.. LibraryBranch
+LibraryEntity <|.. Loan
+@enduml

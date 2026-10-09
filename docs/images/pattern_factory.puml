@@ -1,55 +1,45 @@
 @startuml
-left to right direction
-skinparam backgroundColor #FBFDFF
+top to bottom direction
 skinparam shadowing false
+skinparam backgroundColor white
 skinparam defaultFontName Arial
-skinparam classFontSize 15
-skinparam classAttributeFontSize 12
+skinparam defaultFontSize 18
+skinparam classFontSize 18
+skinparam classAttributeFontSize 16
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
-skinparam linetype ortho
-skinparam nodesep 25
-skinparam ranksep 32
-skinparam ArrowColor #17324D
-skinparam ClassBorderColor #24739B
-skinparam ClassBackgroundColor #E9F4FB
-skinparam InterfaceBorderColor #735A9B
-skinparam InterfaceBackgroundColor #F0EDFA
+skinparam nodesep 18
+skinparam ranksep 24
 hide empty members
-
-title Паттерн Factory: создание сущностей
-
-class LibraryEntityFactory {
-  -ids: IdGenerator
-  +reader(...): Reader
-  +librarian(...): Librarian
-  +branch(...): LibraryBranch
-  +book(...): Book
-  +periodical(...): Periodical
-  +loan(...): Loan
+title Фабрика: создание объектов библиотеки
+class "Создание объектов\nLibraryEntityFactory" as LibraryEntityFactory {
+ -ids: IdGenerator
+ +reader(...): Reader
+ +librarian(...): Librarian
+ +branch(...): LibraryBranch
+ +book(...): Book
+ +periodical(...): Periodical
+ +loan(...): Loan
 }
-interface IdGenerator {
-  +nextId(): String
+interface "Создание идентификатора\nIdGenerator" as IdGenerator {
+ +nextId(): String
 }
-class UuidIdGenerator
-class Reader
-class Librarian
-class LibraryBranch
-class Book
-class Periodical
-class Loan
-
-LibraryEntityFactory --> IdGenerator : получает UUID
+class "Генератор идентификатора\nUuidIdGenerator" as UuidIdGenerator
+class "Читатель\nReader" as Reader
+class "Библиотекарь\nLibrarian" as Librarian
+class "Филиал\nLibraryBranch" as LibraryBranch
+class "Книга\nBook" as Book
+class "Периодическое издание\nPeriodical" as Periodical
+class "Выдача\nLoan" as Loan
 IdGenerator <|.. UuidIdGenerator
+LibraryEntityFactory --> IdGenerator
 LibraryEntityFactory ..> Reader : создаёт
 LibraryEntityFactory ..> Librarian : создаёт
 LibraryEntityFactory ..> LibraryBranch : создаёт
 LibraryEntityFactory ..> Book : создаёт
 LibraryEntityFactory ..> Periodical : создаёт
 LibraryEntityFactory ..> Loan : создаёт
-note bottom
-  Конструкторы получают валидированные значения.
-  seedDemo строит связанный граф и передаёт его
-  в одну транзакцию Room.
-end note
+Reader -[hidden]down-> Librarian
+Book -[hidden]down-> Periodical
+LibraryBranch -[hidden]down-> Loan
 @enduml

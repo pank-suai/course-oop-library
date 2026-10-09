@@ -13,6 +13,7 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(libs.compose.components.resources)
             implementation(libs.androidx.room3.runtime)
             implementation(projects.core)
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
@@ -21,11 +22,18 @@ kotlin {
             implementation(kotlin("test"))
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
         }
+        jvmTest.dependencies {
+            implementation(compose.desktop.uiTestJUnit4)
+        }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
         }
     }
+}
+
+compose.resources {
+    packageOfResClass = "ui.resources"
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

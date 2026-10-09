@@ -1,5 +1,5 @@
 @startuml
-left to right direction
+top to bottom direction
 skinparam backgroundColor #FBFDFF
 skinparam shadowing false
 skinparam defaultFontName Arial
@@ -8,8 +8,8 @@ skinparam classAttributeFontSize 12
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam linetype ortho
-skinparam nodesep 26
-skinparam ranksep 32
+skinparam nodesep 12
+skinparam ranksep 22
 skinparam ArrowColor #17324D
 skinparam ClassBorderColor #24739B
 skinparam ClassBackgroundColor #E9F4FB
@@ -17,24 +17,24 @@ skinparam InterfaceBorderColor #735A9B
 skinparam InterfaceBackgroundColor #F0EDFA
 hide empty members
 
-title Паттерн Repository
+title Репозиторий: чтение и сохранение данных
 
-package "domain boundary" {
-  interface ReaderRepository {
+package "Объекты библиотеки" {
+  interface "Данные читателей\nReaderRepository" as ReaderRepository {
     +readers: Flow<List<Reader>>
     +readersOnce(): List<Reader>
     +findById(id): Reader?
     +save(reader)
     +delete(id)
   }
-  interface PublicationRepository {
+  interface "Данные изданий\nPublicationRepository" as PublicationRepository {
     +publications: Flow<List<Publication>>
     +publicationsOnce(): List<Publication>
     +findById(id): Publication?
     +save(publication)
     +delete(id)
   }
-  interface LoanRepository {
+  interface "Данные выдач\nLoanRepository" as LoanRepository {
     +loans: Flow<List<Loan>>
     +findById(id): Loan?
     +issue(loan, maxActiveLoansPerReader): Boolean
@@ -43,11 +43,11 @@ package "domain boundary" {
     +refreshOverdue(now): Int
   }
 }
-package "Room adapters" {
-  class RoomReaderRepository
-  class RoomPublicationRepository
-  class RoomLoanRepository
-  class LibraryDao {
+package "Работа с базой данных" {
+  class "Хранение читателей\nRoomReaderRepository" as RoomReaderRepository
+  class "Хранение изданий\nRoomPublicationRepository" as RoomPublicationRepository
+  class "Хранение выдач\nRoomLoanRepository" as RoomLoanRepository
+  interface "Чтение и запись таблиц\nLibraryDao" as LibraryDao {
     +issueLoanAtomically(record, limit): Boolean
     +returnLoanAtomically(id, returnedAt): LoanRecord?
   }
@@ -59,14 +59,10 @@ package "Room adapters" {
 ReaderRepository <|.. RoomReaderRepository
 PublicationRepository <|.. RoomPublicationRepository
 LoanRepository <|.. RoomLoanRepository
-RoomReaderRepository --> LibraryDao : delegates
-RoomPublicationRepository --> LibraryDao : delegates
-RoomLoanRepository --> LibraryDao : delegates
-RoomReaderRepository ..> ReaderRecord : maps
-RoomPublicationRepository ..> PublicationRecord : maps
-RoomLoanRepository ..> LoanRecord : maps
-note bottom
-  ViewModel и application layer видят только доменные интерфейсы.
-  Room Record не выходит за persistence-границу.
-end note
+RoomReaderRepository --> LibraryDao
+RoomPublicationRepository --> LibraryDao
+RoomLoanRepository --> LibraryDao
+RoomReaderRepository ..> ReaderRecord
+RoomPublicationRepository ..> PublicationRecord
+RoomLoanRepository ..> LoanRecord
 @enduml

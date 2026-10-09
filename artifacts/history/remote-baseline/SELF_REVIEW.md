@@ -2,7 +2,7 @@
 
 ## Scope
 
-This is a fresh independent review of the current working tree at `/Users/pank-su/course-oop-library`. The review scope was taken from `context/TASK.md:19-29`, `context/context.yaml:17-51`, and `context/requirements-checklist.md:3-28`, then checked against the current Kotlin source, tests, Room schema, Gradle/CI configuration, README, requirements matrix, report, presentation, diagrams, and saved evidence. No tracked solution/source/report/presentation file was edited during this review; only this new review file and generated review helper evidence under `artifacts/self-review-final/` were written.
+This is a fresh independent review of the current working tree at `course-oop-library`. The review scope was taken from `context/TASK.md:19-29`, `context/context.yaml:17-51`, and `context/requirements-checklist.md:3-28`, then checked against the current Kotlin source, tests, Room schema, Gradle/CI configuration, README, requirements matrix, report, presentation, diagrams, and saved evidence. No tracked solution/source/report/presentation file was edited during this review; only this new review file and generated review helper evidence under `artifacts/self-review-final/` were written.
 
 ## Requirement Coverage
 

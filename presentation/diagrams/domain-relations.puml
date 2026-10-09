@@ -1,0 +1,30 @@
+@startuml
+top to bottom direction
+skinparam backgroundColor transparent
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 52
+skinparam rectangleFontSize 56
+skinparam ArrowFontSize 42
+skinparam linetype ortho
+skinparam nodesep 62
+skinparam ranksep 62
+skinparam ArrowColor #274B6D
+skinparam RectangleBorderColor #005AAA
+skinparam RectangleBackgroundColor #EAF4FC
+skinparam RectangleFontColor #17324D
+
+rectangle "ФИЛИАЛ\nLibraryBranch" as Branch #FFF3D8
+rectangle "ЧИТАТЕЛЬ\nReader" as Reader #E8F6EE
+rectangle "БИБЛИОТЕКАРЬ\nLibrarian" as Librarian #E8F6EE
+rectangle "ИЗДАНИЕ\nBook / Periodical" as Publication #F1ECFA
+rectangle "ВЫДАЧА\nLoan\nACTIVE → OVERDUE → RETURNED" as Loan #FFE8E8
+
+Reader -[hidden]right- Librarian
+Librarian -[hidden]right- Publication
+Branch "1" --> "0..*" Librarian
+Branch "1" --> "0..*" Publication
+Reader "1" --> "0..*" Loan
+Librarian "1" --> "0..*" Loan
+Publication "1" --> "0..*" Loan
+@enduml

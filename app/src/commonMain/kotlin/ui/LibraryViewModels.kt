@@ -55,6 +55,8 @@ class ReadersViewModel(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) : AutoCloseable {
     private val errors = MutableStateFlow<String?>(null)
+    private val saveOperation = SaveOperation(scope) { errors.value = it }
+    val saveState: StateFlow<SaveUiState> = saveOperation.state
     private val searchQuery = MutableStateFlow("")
     val query: StateFlow<String> = searchQuery.asStateFlow()
     val state: StateFlow<CollectionUiState<Reader>> = combine(repository.readers, searchQuery) { readers, query ->
@@ -63,7 +65,7 @@ class ReadersViewModel(
             isLoading = false,
         )
     }
-        .catch { emit(CollectionUiState(isLoading = false, error = it.message ?: "Не удалось загрузить читателей")) }
+        .catch { emit(CollectionUiState(isLoading = false, error = "Не удалось загрузить читателей")) }
         .combine(errors) { value, error -> value.copy(error = error ?: value.error) }
         .stateIn(scope, SharingStarted.Eagerly, CollectionUiState())
 
@@ -74,15 +76,12 @@ class ReadersViewModel(
     fun add(fullName: String, birthYear: String, address: String, organization: String): Boolean {
         val year = birthYear.toIntOrNull()
         if (fullName.isBlank() || year == null || address.isBlank() || organization.isBlank()) {
-            errors.value = "Введите имя, корректный год рождения, адрес и организацию"
+            saveOperation.reject("Введите имя, корректный год рождения, адрес и организацию")
             return false
         }
-        errors.value = null
-        scope.launch {
-            runCatchingCancellable { repository.save(Reader(ids.nextId(), fullName, year, address, organization)) }
-                .onFailure { errors.value = it.message ?: "Не удалось сохранить читателя" }
+        return saveOperation.submit {
+            repository.save(Reader(ids.nextId(), fullName, year, address, organization))
         }
-        return true
     }
 
     fun delete(reader: Reader) {
@@ -103,6 +102,8 @@ class PublicationsViewModel(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) : AutoCloseable {
     private val errors = MutableStateFlow<String?>(null)
+    private val saveOperation = SaveOperation(scope) { errors.value = it }
+    val saveState: StateFlow<SaveUiState> = saveOperation.state
     private val searchQuery = MutableStateFlow("")
     val query: StateFlow<String> = searchQuery.asStateFlow()
     val state: StateFlow<CollectionUiState<Publication>> = combine(repository.publications, searchQuery) { publications, query ->
@@ -114,13 +115,13 @@ class PublicationsViewModel(
             isLoading = false,
         )
     }
-        .catch { emit(CollectionUiState(isLoading = false, error = it.message ?: "Не удалось загрузить издания")) }
+        .catch { emit(CollectionUiState(isLoading = false, error = "Не удалось загрузить издания")) }
         .combine(errors) { value, error -> value.copy(error = error ?: value.error) }
         .stateIn(scope, SharingStarted.Eagerly, CollectionUiState())
 
     val branches: StateFlow<CollectionUiState<LibraryBranch>> = branchesRepository.branches
         .map { CollectionUiState(items = it, isLoading = false) }
-        .catch { emit(CollectionUiState(isLoading = false, error = it.message ?: "Не удалось загрузить филиалы")) }
+        .catch { emit(CollectionUiState(isLoading = false, error = "Не удалось загрузить филиалы")) }
         .stateIn(scope, SharingStarted.Eagerly, CollectionUiState())
 
     fun setSearchQuery(value: String) {
@@ -131,13 +132,11 @@ class PublicationsViewModel(
         val parsedYear = year.toIntOrNull()
         val parsedCopies = copies.toIntOrNull()
         if (title.isBlank() || authors.isBlank() || publisher.isBlank() || parsedYear == null || parsedCopies == null || branchId.isBlank()) {
-            errors.value = "Введите название, авторов, издателя, год, число экземпляров и филиал"
+            saveOperation.reject("Введите название, авторов, издателя, год, число экземпляров и филиал")
             return
         }
-        errors.value = null
-        scope.launch {
-            runCatchingCancellable { repository.save(Book(ids.nextId(), title, authors, publisher, parsedYear, parsedCopies, parsedCopies, branchId, isbn.ifBlank { null })) }
-                .onFailure { errors.value = it.message ?: "Не удалось сохранить издание" }
+        saveOperation.submit {
+            repository.save(Book(ids.nextId(), title, authors, publisher, parsedYear, parsedCopies, parsedCopies, branchId, isbn.ifBlank { null }))
         }
     }
 
@@ -146,13 +145,11 @@ class PublicationsViewModel(
         val parsedIssue = issue.toIntOrNull()
         val parsedCopies = copies.toIntOrNull()
         if (title.isBlank() || editors.isBlank() || publisher.isBlank() || parsedYear == null || parsedIssue == null || parsedCopies == null || branchId.isBlank()) {
-            errors.value = "Введите название, редакторов, издателя, год, номер выпуска, число экземпляров и филиал"
+            saveOperation.reject("Введите название, редакторов, издателя, год, номер выпуска, число экземпляров и филиал")
             return
         }
-        errors.value = null
-        scope.launch {
-            runCatchingCancellable { repository.save(Periodical(ids.nextId(), title, editors, publisher, parsedYear, parsedCopies, parsedCopies, branchId, parsedIssue)) }
-                .onFailure { errors.value = it.message ?: "Не удалось сохранить периодическое издание" }
+        saveOperation.submit {
+            repository.save(Periodical(ids.nextId(), title, editors, publisher, parsedYear, parsedCopies, parsedCopies, branchId, parsedIssue))
         }
     }
 
@@ -179,6 +176,8 @@ class LoansViewModel(
     private val currentTimeMillis: () -> Long = ::systemTimeMillis,
 ) : AutoCloseable {
     private val operationErrors = MutableStateFlow<String?>(null)
+    private val actionOperation = SaveOperation(scope) { operationErrors.value = it }
+    val actionState: StateFlow<SaveUiState> = actionOperation.state
     private val refreshErrors = MutableStateFlow<String?>(null)
     val state: StateFlow<CollectionUiState<LoanRow>> = combine(
         loansRepository.loans,
@@ -191,7 +190,7 @@ class LoansViewModel(
             items = loans.map { LoanRow(it, readerNames[it.readerId]?.fullName ?: "Неизвестный читатель", titles[it.publicationId]?.title ?: "Неизвестное издание") },
             isLoading = false,
         )
-    }.catch { emit(CollectionUiState(isLoading = false, error = it.message ?: "Не удалось загрузить выдачи")) }
+    }.catch { emit(CollectionUiState(isLoading = false, error = "Не удалось загрузить выдачи")) }
         .combine(refreshErrors) { value, error -> value.copy(error = error ?: value.error) }
         .combine(operationErrors) { value, error -> value.copy(error = error ?: value.error) }
         .stateIn(scope, SharingStarted.Eagerly, CollectionUiState())
@@ -210,30 +209,22 @@ class LoansViewModel(
 
     fun issue(reader: Reader?, publication: Publication?) {
         if (reader == null || publication == null) {
-            operationErrors.value = "Выберите читателя по имени и издание по названию"
+            actionOperation.reject("Выберите читателя по имени и издание по названию")
             return
         }
-        scope.launch {
-            runCatchingCancellable {
-                val librarian = librariansRepository.librarians.first().firstOrNull()
-                    ?: error("Зарегистрируйте библиотекаря перед выдачей")
-                @OptIn(kotlin.time.ExperimentalTime::class)
-                val now = kotlin.time.Clock.System.now().toEpochMilliseconds()
-                service.issueLoan(reader.id, publication.id, librarian.id, now)
-            }
-                .onSuccess { operationErrors.value = null }
-                .onFailure { operationErrors.value = it.message ?: "Не удалось оформить выдачу" }
+        actionOperation.submit {
+            val librarian = librariansRepository.librarians.first().firstOrNull()
+                ?: error("Зарегистрируйте библиотекаря перед выдачей")
+            @OptIn(kotlin.time.ExperimentalTime::class)
+            val now = kotlin.time.Clock.System.now().toEpochMilliseconds()
+            service.issueLoan(reader.id, publication.id, librarian.id, now)
         }
     }
 
     fun returnLoan(loan: Loan) {
-        scope.launch {
-            runCatchingCancellable {
-                @OptIn(kotlin.time.ExperimentalTime::class)
-                service.returnLoan(loan.id, kotlin.time.Clock.System.now().toEpochMilliseconds())
-            }
-                .onSuccess { operationErrors.value = null }
-                .onFailure { operationErrors.value = it.message ?: "Не удалось оформить возврат" }
+        actionOperation.submit {
+            @OptIn(kotlin.time.ExperimentalTime::class)
+            service.returnLoan(loan.id, kotlin.time.Clock.System.now().toEpochMilliseconds())
         }
     }
     override fun close() = scope.cancel()

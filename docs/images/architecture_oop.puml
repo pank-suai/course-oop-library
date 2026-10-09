@@ -1,87 +1,86 @@
 @startuml
-left to right direction
-skinparam backgroundColor #FBFDFF
+top to bottom direction
 skinparam shadowing false
+skinparam backgroundColor white
 skinparam defaultFontName Arial
-skinparam classFontSize 15
-skinparam classAttributeFontSize 12
+skinparam defaultFontSize 18
+skinparam classFontSize 18
+skinparam classAttributeFontSize 16
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
-skinparam linetype ortho
-skinparam nodesep 28
-skinparam ranksep 36
-skinparam ArrowColor #17324D
-skinparam ClassBorderColor #24739B
-skinparam ClassBackgroundColor #E9F4FB
-skinparam InterfaceBorderColor #735A9B
-skinparam InterfaceBackgroundColor #F0EDFA
+skinparam nodesep 18
+skinparam ranksep 24
 hide empty members
-
-title Архитектура OOP-приложения
-
-package "UI" #E9F4FB {
-  class App
-  class LibraryScreen
-  class ReadersViewModel
-  class PublicationsViewModel
-  class LoansViewModel
-  class AdministrationViewModel
-  class ApplicationContainer
+title Общая диаграмма классов библиотечной системы
+package "Предметная модель" {
+interface "Общий объект библиотеки\nLibraryEntity" as LibraryEntity
+interface "Человек\nPerson" as Person
+interface "Издание\nPublication" as Publication
+class "Читатель\nReader" as Reader
+class "Библиотекарь\nLibrarian" as Librarian
+class "Книга\nBook" as Book
+class "Периодическое издание\nPeriodical" as Periodical
+class "Филиал\nLibraryBranch" as LibraryBranch
+class "Выдача\nLoan" as Loan
+LibraryEntity <|-- Person
+LibraryEntity <|-- Publication
+LibraryEntity <|.. LibraryBranch
+LibraryEntity <|.. Loan
+Person <|.. Reader
+Person <|.. Librarian
+Publication <|.. Book
+Publication <|.. Periodical
+Reader "1" -- "0..*" Loan
+Publication "1" -- "0..*" Loan
+Librarian "1" -- "0..*" Loan
+LibraryBranch "1" -- "0..*" Publication
 }
-package "application" #F0EDFA {
-  interface LibraryService
-  class RoomLibraryService
+package "Управление" {
+interface "Основные действия\nLibraryService" as LibraryService
+class "Выполнение действий\nRoomLibraryService" as RoomLibraryService
+interface "Правила выдачи\nLoanPolicy" as LoanPolicy
+class "Учебные правила\nDefaultLoanPolicy" as DefaultLoanPolicy
+class "Создание объектов\nLibraryEntityFactory" as LibraryEntityFactory
+LibraryService <|.. RoomLibraryService
+LoanPolicy <|.. DefaultLoanPolicy
+RoomLibraryService --> LoanPolicy
+LibraryEntityFactory ..> LibraryEntity : создаёт сущности
 }
-package "domain" #EDF8F2 {
-  interface LibraryEntity
-  class Reader
-  interface Publication
-  class Book
-  class Periodical
-  class Loan
-  interface LoanPolicy
-  class DefaultLoanPolicy
-  class LibraryEntityFactory
-}
-package "persistence" #FFF5DF {
-  interface LibraryRepositoryBundle
-  class RoomRepositoryBundle
-  class LibraryDao
-  class LibraryDatabase
-  class ReaderRecord
-  class PublicationRecord
-  class LoanRecord
-}
-class SQLite
-
-App --> LibraryScreen
-LibraryScreen --> ReadersViewModel
-LibraryScreen --> PublicationsViewModel
-LibraryScreen --> LoansViewModel
-LibraryScreen --> AdministrationViewModel
-ApplicationContainer --> RoomLibraryService
+package "Представление" {
+class "Управление списком читателей\nReadersViewModel" as ReadersViewModel
+class "Управление списком изданий\nPublicationsViewModel" as PublicationsViewModel
+class "Управление выдачами\nLoansViewModel" as LoansViewModel
+class "Учебные действия\nAdministrationViewModel" as AdministrationViewModel
+class "Добавление учебных записей\nTestDataViewModel" as TestDataViewModel
+class "Состояние операции\nSaveOperation" as SaveOperation
+class "Учебный набор\nTestDataSeeder" as TestDataSeeder
+class "Экранные компоненты\nCompose" as UI <<функции интерфейса>>
+UI --> ReadersViewModel
+UI --> PublicationsViewModel
+UI --> LoansViewModel
+UI --> AdministrationViewModel
+UI --> TestDataViewModel
+TestDataViewModel --> TestDataSeeder
+ReadersViewModel --> SaveOperation
+PublicationsViewModel --> SaveOperation
+LoansViewModel --> SaveOperation
+TestDataViewModel --> SaveOperation
 ReadersViewModel --> LibraryService
 PublicationsViewModel --> LibraryService
 LoansViewModel --> LibraryService
 AdministrationViewModel --> LibraryService
-RoomLibraryService ..|> LibraryService
-RoomLibraryService --> LibraryRepositoryBundle
-RoomLibraryService --> LoanPolicy
-DefaultLoanPolicy ..|> LoanPolicy
-LibraryEntityFactory ..> LibraryEntity : creates
+}
+package "Хранение" {
+interface "Средства работы с данными\nLibraryRepositoryBundle" as LibraryRepositoryBundle
+class "Работа с базой\nRoomRepositoryBundle" as RoomRepositoryBundle
+interface "Чтение и запись таблиц\nLibraryDao" as LibraryDao
+class "База данных\nLibraryDatabase" as LibraryDatabase
 LibraryRepositoryBundle <|.. RoomRepositoryBundle
 RoomRepositoryBundle --> LibraryDao
-LibraryDao --> LibraryDatabase
-LibraryDatabase --> SQLite
-LibraryDao ..> ReaderRecord
-LibraryDao ..> PublicationRecord
-LibraryDao ..> LoanRecord
-ReaderRecord ..> Reader : maps
-PublicationRecord ..> Publication : maps
-LoanRecord ..> Loan : maps
-
-note bottom
-  UI → application → domain abstractions → persistence adapters → SQLite.
-  Технические id остаются внутри слоёв и не вводятся пользователем.
-end note
+LibraryDatabase --> LibraryDao : предоставляет
+}
+RoomLibraryService --> LibraryRepositoryBundle
+TestDataSeeder --> LibraryRepositoryBundle
+RoomRepositoryBundle ..> LibraryEntity : преобразует записи
+LibraryEntityFactory -[hidden]right-> DefaultLoanPolicy
 @enduml

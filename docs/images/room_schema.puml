@@ -1,5 +1,5 @@
 @startuml
-left to right direction
+top to bottom direction
 skinparam backgroundColor #FBFDFF
 skinparam shadowing false
 skinparam defaultFontName Arial
@@ -8,8 +8,8 @@ skinparam classAttributeFontSize 12
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam linetype ortho
-skinparam nodesep 30
-skinparam ranksep 38
+skinparam nodesep 12
+skinparam ranksep 22
 skinparam ArrowColor #17324D
 skinparam EntityBorderColor #24739B
 skinparam EntityBackgroundColor #E9F4FB
@@ -72,13 +72,4 @@ readers ||--o{ loans
 publications ||--o{ loans
 librarians ||--o{ loans
 
-note bottom
-  Reader 0..* ↔ 0..* Publication выражена таблицей loans.
-  Поля связей: branchId, readerId, publicationId, librarianId.
-  Все внешние ключи используют onDelete = RESTRICT.
-  issueLoanAtomically: ACTIVE + лимит + availableCopies > 0.
-  returnLoanAtomically: RETURNED + проверка времени + остаток +1 один раз.
-  markOverdueLoans: ACTIVE → OVERDUE при dueAt < now.
-  savePublication(existing): метаданные без перезаписи totalCopies и availableCopies.
-end note
 @enduml

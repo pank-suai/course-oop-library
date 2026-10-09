@@ -1,27 +1,27 @@
 @startuml
-left to right direction
+top to bottom direction
 skinparam backgroundColor transparent
 skinparam shadowing false
 skinparam defaultFontName Arial
-skinparam defaultFontSize 46
-skinparam rectangleFontSize 50
-skinparam ArrowFontSize 42
+skinparam defaultFontSize 44
+skinparam rectangleFontSize 46
 skinparam linetype ortho
-skinparam nodesep 55
-skinparam ranksep 50
+skinparam nodesep 54
+skinparam ranksep 48
 skinparam RectangleBorderColor #005AAA
 skinparam RectangleBackgroundColor #EAF4FC
-skinparam ArrowColor #17324D
+skinparam RectangleFontColor #17324D
 
-rectangle "branches" as branches
-rectangle "readers" as readers
-rectangle "librarians" as librarians
-rectangle "publications\ntotal · available" as publications
-rectangle "loans\n3 FK · status · dates" as loans
+rectangle "ЧИТАТЕЛИ · readers\nPK id\nfullName · birthYear\naddress · organization" as readers #E8F6EE
+rectangle "ФИЛИАЛЫ · branches\nPK id\nname · address" as branches #FFF3D8
+rectangle "БИБЛИОТЕКАРИ · librarians\nPK id · FK branchId\nfullName · position" as librarians #E8F6EE
+rectangle "ИЗДАНИЯ · publications\nPK id · FK branchId\nkind · title · authors · publisher · year\nISBN / issueNumber\ntotalCopies · availableCopies" as publications #F1ECFA
+rectangle "ВЫДАЧИ · loans\nPK id\nFK readerId · publicationId · librarianId\nissuedAt · dueAt · returnedAt\nstatus" as loans #FFE8E8
 
-branches --> librarians
-branches --> publications
-readers --> loans
-librarians --> loans
-publications --> loans
+readers -[hidden]right- branches
+branches -[hidden]right- librarians
+publications -[hidden]right- loans
+readers -[hidden]down- publications
+branches -[hidden]down- publications
+librarians -[hidden]down- loans
 @enduml

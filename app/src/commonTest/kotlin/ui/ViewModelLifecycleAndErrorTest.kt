@@ -33,6 +33,28 @@ import persistence.PublicationRepository
 import persistence.ReaderRepository
 
 class ViewModelLifecycleAndErrorTest {
+    @Test fun pendingReturnIgnoresRepeatedSubmit() = runBlocking {
+        val service = PendingService()
+        val vm = LoansViewModel(service, EmptyLoans(), StaticReaders(), StaticPublications(), StaticLibrarians(), scope = testScope())
+        try {
+            val loan = Loan("loan", "reader", "book", "librarian", 0L, 1L)
+            vm.returnLoan(loan)
+            vm.returnLoan(loan)
+            assertEquals(1, service.returnCalls)
+        } finally { service.release.complete(Unit); vm.close() }
+    }
+
+    @Test fun pendingIssueIgnoresRepeatedSubmit() = runBlocking {
+        val service = PendingService()
+        val vm = LoansViewModel(service, EmptyLoans(), StaticReaders(), StaticPublications(), StaticLibrarians(), scope = testScope())
+        try {
+            val reader = Reader("reader", "Ada", 1815, "Address", "Org")
+            vm.issue(reader, book())
+            vm.issue(reader, book())
+            assertEquals(1, service.issueCalls)
+        } finally { service.release.complete(Unit); vm.close() }
+    }
+
     @Test
     fun everyViewModelCloseCancelsItsEagerScope() {
         val readersScope = testScope()
@@ -483,6 +505,22 @@ private class RecoveringService(
     override suspend fun deletePublication(publicationId: String) = Unit
     override suspend fun seedDemo() = false
     override suspend fun clearAll() = ClearAllResult(0, 0, 0, 0, 0)
+}
+
+private class PendingService : LibraryService by RecoveringService() {
+    val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+    var issueCalls = 0
+    var returnCalls = 0
+    override suspend fun issueLoan(readerId: String, publicationId: String, librarianId: String, now: Long): Loan {
+        issueCalls++
+        release.await()
+        return Loan("loan", readerId, publicationId, librarianId, now, now + 1L)
+    }
+    override suspend fun returnLoan(loanId: String, now: Long): Loan {
+        returnCalls++
+        release.await()
+        return Loan(loanId, "reader", "book", "librarian", 0L, 1L, LoanState.Returned(now))
+    }
 }
 
 private class FailingService : LibraryService {

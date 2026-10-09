@@ -1,5 +1,10 @@
 # Ignore Gradle project-specific cache directory
 .gradle
+.DS_Store
+.env
+.env.*
+*.p12
+*.pfx
 .venv-pptx/
 
 # Ignore Gradle build output directory

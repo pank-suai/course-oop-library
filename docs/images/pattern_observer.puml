@@ -1,61 +1,28 @@
 @startuml
-left to right direction
-skinparam backgroundColor #FBFDFF
+top to bottom direction
 skinparam shadowing false
+skinparam backgroundColor white
 skinparam defaultFontName Arial
-skinparam classFontSize 15
-skinparam classAttributeFontSize 12
+skinparam defaultFontSize 18
+skinparam classFontSize 18
+skinparam classAttributeFontSize 16
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
-skinparam linetype ortho
-skinparam nodesep 28
-skinparam ranksep 34
-skinparam ArrowColor #17324D
-skinparam ClassBorderColor #24739B
-skinparam ClassBackgroundColor #E9F4FB
-skinparam InterfaceBorderColor #735A9B
-skinparam InterfaceBackgroundColor #F0EDFA
+skinparam nodesep 18
+skinparam ranksep 24
 hide empty members
-
-title Паттерн Observer: реактивное обновление
-
-class LibraryDao {
-  +observeReaders(): Flow<List<ReaderRecord>>
-  +observePublications(): Flow<List<PublicationRecord>>
-  +observeLoans(): Flow<List<LoanRecord>>
+title Наблюдатель: обновление списка читателей
+interface "Чтение и запись таблиц\nLibraryDao" as LibraryDao {
+ +observeReaders(): Flow<List<ReaderRecord>>
 }
-class RoomRepositoryBundle
-class RoomReaderRepository
-class RoomPublicationRepository
-class RoomLoanRepository
-class ReadersViewModel {
-  +state: StateFlow<CollectionUiState<Reader>>
+class "Хранение читателей\nRoomReaderRepository" as RoomReaderRepository {
+ +readers: Flow<List<Reader>>
 }
-class PublicationsViewModel {
-  +state: StateFlow<CollectionUiState<Publication>>
+class "Управление списком читателей\nReadersViewModel" as ReadersViewModel {
+ +state: StateFlow<CollectionUiState<Reader>>
 }
-class LoansViewModel {
-  +state: StateFlow<CollectionUiState<LoanRow>>
-}
-class ComposeScreen {
-  +collectAsState()
-}
-
-LibraryDao --> RoomReaderRepository : Flow<Record>
-LibraryDao --> RoomPublicationRepository : Flow<Record>
-LibraryDao --> RoomLoanRepository : Flow<Record>
-RoomReaderRepository --> RoomRepositoryBundle
-RoomPublicationRepository --> RoomRepositoryBundle
-RoomLoanRepository --> RoomRepositoryBundle
-RoomReaderRepository --> ReadersViewModel : Flow<Reader>
-RoomPublicationRepository --> PublicationsViewModel : Flow<Publication>
-RoomLoanRepository --> LoansViewModel : Flow<Loan>
-ReadersViewModel --> ComposeScreen : StateFlow
-PublicationsViewModel --> ComposeScreen : StateFlow
-LoansViewModel --> ComposeScreen : StateFlow
-note bottom
-  Изменение таблицы проходит цепочку:
-  DAO Flow → доменное преобразование → StateFlow → Compose.
-  loans Flow перед emit обновляет просроченные ACTIVE-записи.
-end note
+class "Экран читателей\nReadersPane" as ReadersPane <<функция интерфейса>>
+LibraryDao --> RoomReaderRepository : изменения записей
+RoomReaderRepository --> ReadersViewModel : список читателей
+ReadersViewModel --> ReadersPane : новое состояние списка
 @enduml

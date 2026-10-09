@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "profile": "coursework",
+  "status": "ready",
+  "rules": {
+    "font": "Times New Roman",
+    "body_pt": 14,
+    "table_pt": 14,
+    "rounding_decimals": null,
+    "materials_list": false,
+    "service_notes": false,
+    "limitations": "material_only",
+    "conclusion": "result_based",
+    "figure_table_crossrefs": true,
+    "first_level_new_page": true,
+    "worked_examples": "when_required",
+    "template": "designated_coursework_template",
+    "sections": [
+      "Введение",
+      "Постановка задачи",
+      "Разработка классов",
+      "Разработка приложения",
+      "Тестирование",
+      "Заключение",
+      "Список использованных источников",
+      "Приложение А"
+    ]
+  },
+  "plan": {
+    "scope": "revision",
+    "format": "pdf",
+    "phases": [
+      "report",
+      "verify"
+    ]
+  },
+  "provenance": {
+    "font": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.font"
+    },
+    "body_pt": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.body_pt"
+    },
+    "table_pt": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.table_pt"
+    },
+    "rounding_decimals": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.rounding_decimals"
+    },
+    "materials_list": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.materials_list"
+    },
+    "service_notes": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.service_notes"
+    },
+    "limitations": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.limitations"
+    },
+    "conclusion": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.conclusion"
+    },
+    "figure_table_crossrefs": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.figure_table_crossrefs"
+    },
+    "first_level_new_page": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.first_level_new_page"
+    },
+    "worked_examples": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.worked_examples"
+    },
+    "template": {
+      "tier": "profile_default",
+      "source": "assets/profiles/coursework.json",
+      "locator": "rules.template"
+    },
+    "sections": {
+      "tier": "methodology",
+      "source": "inputs/methodology.txt",
+      "locator": "страницы 6–7, раздел 5"
+    }
+  },
+  "conflicts": []
+}

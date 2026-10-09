@@ -1,77 +1,30 @@
 @startuml
-left to right direction
-skinparam backgroundColor #FBFDFF
+top to bottom direction
 skinparam shadowing false
+skinparam backgroundColor white
 skinparam defaultFontName Arial
-skinparam classFontSize 15
-skinparam classAttributeFontSize 12
+skinparam defaultFontSize 18
+skinparam classFontSize 18
+skinparam classAttributeFontSize 16
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
-skinparam linetype ortho
-skinparam nodesep 26
-skinparam ranksep 32
-skinparam ArrowColor #17324D
-skinparam ClassBorderColor #24739B
-skinparam ClassBackgroundColor #E9F4FB
-skinparam InterfaceBorderColor #735A9B
-skinparam InterfaceBackgroundColor #F0EDFA
+skinparam nodesep 18
+skinparam ranksep 24
 hide empty members
-
-title Паттерн MVVM
-
-package "View" {
-  class App
-  class LibraryScreen
-  class ReadersPane
-  class PublicationsPane
-  class LoansPane
-  class ArchitecturePane
+title Разделение данных и экрана читателей (MVVM)
+class "Экран читателей\nReadersPane" as ReadersPane <<функция интерфейса>>
+class "Управление списком читателей\nReadersViewModel" as ReadersViewModel {
+ +state: StateFlow<CollectionUiState<Reader>>
+ +saveState: StateFlow<SaveUiState>
+ +setSearchQuery(value: String)
+ +add(...): Boolean
+ +delete(reader: Reader)
 }
-package "ViewModel" {
-  class ReadersViewModel {
-    +state: StateFlow<CollectionUiState<Reader>>
-    +setSearchQuery(value)
-    +add(...): Boolean
-    +delete(reader)
-  }
-  class PublicationsViewModel {
-    +state: StateFlow<CollectionUiState<Publication>>
-    +addBook(...)
-    +addPeriodical(...)
-    +delete(publication)
-  }
-  class LoansViewModel {
-    +state: StateFlow<CollectionUiState<LoanRow>>
-    +issue(reader, publication)
-    +returnLoan(loan)
-  }
-  class AdministrationViewModel {
-    +state: StateFlow<AdministrationUiState>
-    +seedDemo()
-    +clearAll()
-  }
-}
-package "Model / application" {
-  interface LibraryService
-  class RoomLibraryService
-}
-
-App --> LibraryScreen
-LibraryScreen --> ReadersPane
-LibraryScreen --> PublicationsPane
-LibraryScreen --> LoansPane
-LibraryScreen --> ArchitecturePane
-ReadersPane --> ReadersViewModel : events + state
-PublicationsPane --> PublicationsViewModel : events + state
-LoansPane --> LoansViewModel : events + state
-ArchitecturePane --> AdministrationViewModel : events + state
+interface "Данные читателей\nReaderRepository" as ReaderRepository
+interface "Основные действия\nLibraryService" as LibraryService
+class "Читатель\nReader" as Reader
+ReadersPane --> ReadersViewModel
+ReadersViewModel --> ReaderRepository
 ReadersViewModel --> LibraryService
-PublicationsViewModel --> LibraryService
-LoansViewModel --> LibraryService
-AdministrationViewModel --> LibraryService
-RoomLibraryService ..|> LibraryService
-note bottom
-  ViewModel принимает события UI, запускает корутины и публикует UiState.
-  View получает только StateFlow и не знает SQL.
-end note
+ReaderRepository ..> Reader
 @enduml

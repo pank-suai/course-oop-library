@@ -1,0 +1,17 @@
+@startuml
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 32
+skinparam classFontSize 32
+skinparam classAttributeIconSize 0
+skinparam nodesep 30
+skinparam ranksep 45
+hide empty members
+left to right direction
+class "Читатель\nReader" as Reader
+class "Выдача\nLoan" as Loan
+interface "Издание\nPublication" as Publication
+Reader "1" -- "0..*" Loan
+Loan "0..*" -- "1" Publication
+@enduml

@@ -1,0 +1,30 @@
+@startuml
+top to bottom direction
+skinparam backgroundColor transparent
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 54
+skinparam rectangleFontSize 58
+skinparam ArrowFontSize 42
+skinparam linetype ortho
+skinparam nodesep 68
+skinparam ranksep 62
+skinparam ArrowColor #274B6D
+skinparam RectangleBorderColor #005AAA
+skinparam RectangleBackgroundColor #EAF4FC
+skinparam RectangleFontColor #17324D
+
+rectangle "readers\nPK id" as readers #E8F6EE
+rectangle "branches\nPK id" as branches #FFF3D8
+rectangle "librarians\nPK id · FK branchId" as librarians #E8F6EE
+rectangle "publications\nPK id · FK branchId" as publications #F1ECFA
+rectangle "loans\nPK id · 3 FK\nreaderId · librarianId · publicationId" as loans #FFE8E8
+
+readers -[hidden]right- branches
+librarians -[hidden]right- publications
+branches "1" --> "0..*" librarians
+branches "1" --> "0..*" publications
+readers "1" --> "0..*" loans
+librarians "1" --> "0..*" loans
+publications "1" --> "0..*" loans
+@enduml

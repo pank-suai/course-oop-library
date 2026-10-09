@@ -9,4 +9,8 @@
 
 # Binary files should be left untouched
 *.jar           binary
+*.pdf           binary
+*.png           binary
+*.jpg           binary
+*.ttf           binary
 

@@ -1,11 +1,9 @@
 # CI проекта
 
-Workflow `ci.yml` проверяет только Desktop JVM-вариант:
+Workflow `ci.yml` работает на Ubuntu с Temurin JDK 17. `xvfb-run` создаёт виртуальный дисплей для настоящих Compose UI-тестов.
 
-- `./gradlew test` — запускает тесты `core:jvmTest` и `app:jvmTest`;
-- `./gradlew build` — собирает модули и выполняет проверки;
-- `./gradlew :docs:compileTypst` — компилирует пояснительную записку.
+- `./gradlew clean test build` — тесты core/app и сборка Desktop JVM;
+- `./gradlew :docs:compileTypst` — компиляция записки;
+- JUnit-отчёты сохраняются при любом результате.
 
-Workflow выполняется на Temurin Java 17 и загружает JUnit-отчёты как artifact.
-
-Web/WASM-сборка и публикация GitHub Pages удалены, поскольку методичка требует настольное JVM-приложение.
+Это Linux CI, не доказательство ручного запуска интерфейса на Windows или macOS. Web/WASM и GitHub Pages не используются.

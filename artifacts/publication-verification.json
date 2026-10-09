@@ -1,0 +1,78 @@
+{
+  "scope": "source-tree publication from authorized ZIP; code unchanged from package",
+  "authorized_zip_sha256": "f55d74f54e6edf9e78f7b00f4cabbf4019d6e3ef5b46b2b87a1d673c4dd25060",
+  "local_build_exit": 0,
+  "local_java": "openjdk version \"25.0.1\" 2025-10-21\nOpenJDK Runtime Environment (build 25.0.1+8-27)\nOpenJDK 64-Bit Server VM (build 25.0.1+8-27, mixed mode, sharing)",
+  "tests": [
+    {
+      "module": "core",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "tests": 50,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "source_files_exact": 26,
+  "listing_paths_exact": 26,
+  "documents": [
+    {
+      "path": "docs/report.pdf",
+      "sha256": "9117e62d599b9e84f3c461518db6893dbd7bccb456a96bf141e966d386c21c56",
+      "pages": 100,
+      "all_page_text_and_pixels_equal": true
+    },
+    {
+      "path": "presentation/course-oop-library.pdf",
+      "sha256": "4560edea16d47a1ad8705afe0e8762f0ad25c926cfd3f9ff86f681a2c11d935b",
+      "pages": 15,
+      "all_page_text_and_pixels_equal": true
+    },
+    {
+      "path": "prep/defense-notes.pdf",
+      "sha256": "1ced33e5c66f0308cef7f6cb52bce495e10685d91c9a309ebab646b22e46f43c",
+      "pages": 3,
+      "all_page_text_and_pixels_equal": true
+    },
+    {
+      "path": "docs/build/typst/main/index.pdf",
+      "pages": 100,
+      "all_page_text_and_pixels_equal": true
+    }
+  ],
+  "native_macos_distributable_built": true,
+  "new_native_gui_smoke": false,
+  "windows_manual_gui_test": false,
+  "linux_manual_gui_test": false,
+  "staged_binary_diff_sha256": "8f2db64a50a43989f87677b82c03ebbce8352c3c56e7c7845f11d8684ad9cedd",
+  "secret_scan_hits": [],
+  "protected_template_whitespace_exception": [
+    "docs/lib/gost.typ:41: trailing whitespace.",
+    "docs/lib/gost.typ:45: trailing whitespace.",
+    "docs/lib/gost.typ:65: trailing whitespace.",
+    "docs/lib/gost.typ:70: trailing whitespace.",
+    "docs/lib/gost.typ:100: trailing whitespace.",
+    "docs/lib/gost.typ:119: trailing whitespace.",
+    "docs/lib/gost.typ:121: trailing whitespace.",
+    "docs/lib/gost.typ:126: trailing whitespace.",
+    "docs/lib/gost.typ:132: trailing whitespace.",
+    "docs/lib/gost.typ:137: trailing whitespace.",
+    "docs/lib/gost.typ:150: trailing whitespace.",
+    "docs/lib/gost.typ:162: trailing whitespace.",
+    "docs/lib/gost.typ:171: trailing whitespace."
+  ],
+  "remote_ci": "pending after push; do not interpret local verification as CI approval",
+  "publication_decision": "User explicitly requested immediate publication of this green baseline, with form-error fix in a later commit.",
+  "known_issue": "After cancelling a failed reader/publication/loan form, its old error can remain visible. Startup is unaffected; a separate fix is being prepared.",
+  "review_status": {
+    "academic": "passed for pre-safety-change baseline",
+    "code": "review found the disclosed UI issue; user authorized publication before the fix",
+    "security_corrections": "Actions pinned to verified commit SHA, checkout credentials disabled, unused local file URI removed, historical local path made relative"
+  }
+}

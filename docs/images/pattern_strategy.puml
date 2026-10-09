@@ -1,5 +1,5 @@
 @startuml
-left to right direction
+top to bottom direction
 skinparam backgroundColor #FBFDFF
 skinparam shadowing false
 skinparam defaultFontName Arial
@@ -8,8 +8,8 @@ skinparam classAttributeFontSize 12
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam linetype ortho
-skinparam nodesep 28
-skinparam ranksep 34
+skinparam nodesep 12
+skinparam ranksep 22
 skinparam ArrowColor #17324D
 skinparam ClassBorderColor #24739B
 skinparam ClassBackgroundColor #E9F4FB
@@ -17,34 +17,30 @@ skinparam InterfaceBorderColor #735A9B
 skinparam InterfaceBackgroundColor #F0EDFA
 hide empty members
 
-title Паттерн Strategy: политика выдачи
+title Стратегия: правила выдачи
 
-class RoomLibraryService {
+class "Выполнение действий\nRoomLibraryService" as RoomLibraryService {
   -policy: LoanPolicy
   +issueLoan(readerId, publicationId, librarianId, now): Loan
   +returnLoan(loanId, now): Loan
 }
-interface LoanPolicy {
+interface "Правила выдачи\nLoanPolicy" as LoanPolicy {
   +maxActiveLoansPerReader: Int
   +canIssue(reader, publication, activeLoansForReader): PolicyDecision
   +dueAt(issuedAt, publication): Long
 }
-class DefaultLoanPolicy {
+class "Учебные правила\nDefaultLoanPolicy" as DefaultLoanPolicy {
   +maxActiveLoansPerReader = 5
   -bookLoanDays = 21
   -periodicalLoanDays = 7
   +canIssue(...): PolicyDecision
   +dueAt(...): Long
 }
-class Book
-class Periodical
+class "Книга\nBook" as Book
+class "Периодическое издание\nPeriodical" as Periodical
 
-RoomLibraryService --> LoanPolicy : delegates
+RoomLibraryService --> LoanPolicy : проверяет правила
 LoanPolicy <|.. DefaultLoanPolicy
 DefaultLoanPolicy --> Book : 21 дней
 DefaultLoanPolicy --> Periodical : 7 дней
-note bottom of DefaultLoanPolicy
-  canIssue проверяет лимит активных выдач
-  и наличие экземпляра.
-end note
 @enduml

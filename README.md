@@ -1,118 +1,89 @@
-# Библиотечная система для курса ООП
+# Библиотечная информационная система
 
-Настольное приложение для JVM на Kotlin и Compose Desktop. Система предназначена для учёта читателей, филиалов, изданий и выдач. Данные сохраняются в локальной SQLite-базе через Room 3 и BundledSQLiteDriver.
+Курсовой проект по ООП: Панков В. Д., М412. Руководитель — Е. О. Шумова.
+Настольное приложение на Kotlin и Compose Desktop. Данные сохраняются локально в SQLite через Room.
 
-## Архитектура
+## Запуск на другом компьютере
 
-```text
-Compose Desktop UI
-    ↓ MVVM (StateFlow состояния)
-LibraryService / RoomLibraryService
-    ↓ доменные интерфейсы репозиториев
-Room-репозитории → LibraryDao → SQLite
+Нужны **JDK 17**, Git и интернет для первого скачивания зависимостей. Gradle отдельно устанавливать не нужно: wrapper включён в репозиторий. Запуск требует графического рабочего стола; это не консольная программа.
+
+### macOS / Linux
+
+```sh
+git clone https://github.com/pank-suai/course-oop-library.git
+cd course-oop-library
+java -version
+./gradlew :app:run --no-daemon
 ```
 
-Иерархия предметной области:
+Если запускаешь из скачанных файлов, а не из `git clone`, перед запуском выполни `chmod +x gradlew`.
 
-```text
-LibraryEntity
-├── Person
-│   ├── Reader
-│   └── Librarian
-└── Publication
-    ├── Book
-    └── Periodical
+### Windows (PowerShell)
 
-LibraryBranch и Loan также реализуют LibraryEntity.
+```powershell
+git clone https://github.com/pank-suai/course-oop-library.git
+cd course-oop-library
+java -version
+.\gradlew.bat :app:run --no-daemon
 ```
 
-Loan является ассоциативной сущностью связи многие-ко-многим между читателями и изданиями. Librarian принадлежит филиалу. Все связи Room используют внешние ключи и индексы.
+`java -version` должен показывать установленный JDK 17; `JAVA_HOME` должен указывать на него. Если команда `java` не найдена, установи JDK и открой терминал заново. При первом запуске Gradle скачивает зависимости, поэтому запуск может занять несколько минут.
 
-## Пользовательский интерфейс
+Приложение не заполняет базу автоматически. Для демонстрации нажми «Тестовые книги», затем «Тестовые читатели», либо открой «Архитектура» → «Добавить демоданные». **Не нажимай «Очистить данные», если нужны существующие записи.**
 
-В главном окне доступны четыре русские вкладки:
-
-- Читатели: добавление, поиск по имени, просмотр и удаление читателей;
-- Издания: добавление книг и периодических изданий, поиск по названию или автору, просмотр остатка и удаление;
-- Выдачи: выбор читателя и издания по именам и названиям, выдача экземпляра и возврат активной выдачи;
-- Архитектура: просмотр иерархии классов, связи M:N и паттернов, явное добавление демонстрационных данных и транзакционная очистка.
-
-Технические идентификаторы генерируются внутри приложения и не вводятся в формы. ISBN является необязательным библиографическим полем. При активных или исторических выдачах приложение защищает читателя и издание от удаления.
-
-## Паттерны проектирования
-
-- Repository: интерфейсы репозиториев не зависят от Room; реализации выполняют отображение записей;
-- MVVM: Compose-экраны наблюдают значения StateFlow из ViewModel;
-- Strategy: LoanPolicy задаёт правила выдачи и сроки, зависящие от типа издания;
-- Factory: LibraryEntityFactory создаёт корректные сущности и получает UUID через IdGenerator;
-- Observer: потоки Flow из DAO преобразуются в StateFlow для UI;
-- State: LoanState описывает активную, просроченную и возвращённую выдачу;
-- Facade: RoomLibraryService координирует проверку, атомарные выдачу и возврат, защищённое удаление, повторно безопасную загрузку и очистку.
-
-## Сохранение данных
-
-Используются Room 3.0.0, KSP 2.3.11 и androidx.sqlite:sqlite-bundled:2.7.0. Экспортированная схема хранится в `core/schemas/persistence.LibraryDatabase/1.json`. Версия схемы равна 1, деструктивные миграции не используются.
-
-Путь базы данных выбирается по операционной системе:
-
+Личная база не хранится в репозитории и не переносится вместе с `git clone`. На другом компьютере будет своя база:
 - macOS: `~/Library/Application Support/CourseOopLibrary/library.db`;
 - Linux: `~/.local/share/course-oop-library/library.db`;
 - Windows: `%LOCALAPPDATA%/CourseOopLibrary/library.db`.
 
-Выдача выполняет атомарную проверку статуса ACTIVE, лимита активных выдач читателя и доступного экземпляра. Возврат проверяет дату, переводит запись в RETURNED и увеличивает остаток ровно один раз. Просроченные записи переводятся из ACTIVE в OVERDUE при чтении потока выдач.
+## Возможности
 
-## Сборка и тестирование
+Четыре русские вкладки: «Читатели», «Издания», «Выдачи», «Архитектура». Регистрация и поиск, книги и периодика, свободный остаток и филиал, выдача с проверкой лимита, возврат и история. Защищено удаление связанных записей; выдача и возврат выполняются транзакционно.
 
-Для сборки нужен JDK с поддержкой байткода Java 17. Локальный toolchain JDK 17 не требуется.
+Учебные кнопки добавляют вымышленных читателей и книги без очистки существующих записей. Повторное добавление не создаёт дубликаты. Обложки известных учебных ISBN, шрифт Inter и векторные значки встроены; в работе приложения сеть не нужна.
 
-```text
+## Структура
+
+- `app/` — окно, формы, состояния и UI-тесты;
+- `core/` — объекты предметной области, правила, Room/SQLite и тесты;
+- `gradlew`, `gradlew.bat`, `gradle/` — Gradle wrapper;
+- `docs/` — актуальная записка, исходники Typst, UML PlantUML и снимки интерфейса;
+- `context/bibliography-profile/` — профиль оформления записки;
+- `presentation/` — презентация ГУАП и исходники;
+- `prep/` — памятка для защиты;
+- `artifacts/` — результаты проверок; `artifacts/history/` относится к прежней версии и не служит одобрением текущей.
+
+## Документы
+
+- [Пояснительная записка](docs/report.pdf): 100 страниц без титула и задания, 16 источников; полные листинги 26 производственных файлов, без А.1/А.2, с увеличенным интервалом.
+- [Презентация](presentation/course-oop-library.pdf): 15 слайдов.
+- [Памятка](prep/defense-notes.pdf): 3 страницы; не часть сдаваемой записки.
+
+Титул и подписанное задание добавляются отдельно. Подписи, оценка и дата согласования за преподавателя не заполнялись. В личный кабинет работа не отправлялась.
+
+## Тесты и сборка
+
+```sh
 ./gradlew clean test build --no-daemon
-./gradlew :core:jvmTest
-./gradlew :app:jvmTest
-./gradlew :core:jvmTest --tests application.ControlScenarioTest
 ./gradlew :docs:compileTypst --no-daemon
-typst compile --root . docs/index.typ docs/report.pdf
-typst compile --root . presentation/main.typ presentation/course-oop-library.pdf
-./gradlew :app:run
+./gradlew :app:createDistributable --no-daemon
 ```
 
-Финальный проверенный набор содержит 35 успешно пройденных тестов: 17 в core и 18 в app; ошибки, ошибки выполнения и пропуски отсутствуют. Проверены доменная модель, запись и повторное открытие Room-базы, преобразование записей, M:N-связь, атомарные выдача и возврат, лимит активных выдач, обновление метаданных с сохранением остатка, строгий инвариант ACTIVE, сохранённое и периодическое обновление просрочки, независимое восстановление operation/refresh ошибок, корректное распространение отмены корутин без зависшего busy-state, проверка времени возврата, защищённое удаление, повторно безопасная загрузка, транзакционная очистка и жизненный цикл ViewModel.
+В Windows замени `./gradlew` на `.\gradlew.bat`. Установочные пакеты создаются на соответствующей ОС (`:app:packageDmg`, `:app:packageMsi`, `:app:packageDeb`). Готовые пакеты для всех ОС не заявляются: подтверждённые результаты находятся в `artifacts/publication-verification.json`.
 
-## Артефакты курсовой работы
+При установленном Typst документы можно собрать из корня:
 
-- `docs/report.pdf` — пояснительная записка формата A4 на 51 странице без титульного листа; итоговая сборка и визуальная проверка зафиксированы в `artifacts/report-build.txt`;
-- `docs/index.typ` и `docs/lib/gost.typ` — исходник отчёта и форматирование на основе ГОСТ-шаблона предыдущей курсовой работы;
-- `docs/requirements-matrix.md` — матрица требований и фактических доказательств;
-- `docs/images` — десять авторитетных `.puml` и сгенерированных PlantUML `.svg`, а также снимки интерфейса;
-- `presentation/main.typ` — единственный исходник Typst/Polylux для защиты;
-- `presentation/lib/guap-template.typ` и `presentation/lib/images` — адаптированный шаблон ГУАП и официальные изображения;
-- `presentation/diagrams` — крупношрифтовые PlantUML-представления домена и Room для защиты;
-- `presentation/course-oop-library.pdf` — финальная презентация на 15 слайдов 16:9;
-- `artifacts/test-results.txt`, `artifacts/build-results.txt`, `artifacts/report-build.txt`, `artifacts/presentation-build.txt` — фактические результаты проверок и сборок.
+```sh
+typst compile --root . docs/index.typ docs/report.pdf
+typst compile --root . presentation/main.typ presentation/course-oop-library.pdf
+typst compile --root . prep/index.typ prep/defense-notes.pdf
+```
 
-## Диаграммы
+Для приложения Typst и шрифты записки не нужны. Тестовый набор содержит 67 проверок: 17 core и 50 app. Тесты используют отдельные временные базы. Нативный запуск ранее проверен на macOS; Windows/Linux не выдаются за вручную испытанные ОС.
 
-В каталоге `docs/images` находятся пары исходник и результат для каждой технической диаграммы:
+## Архитектура и ограничения
 
-- `oop_entities.puml` и `oop_entities.svg`;
-- `pattern_repository.puml` и `pattern_repository.svg`;
-- `pattern_mvvm.puml` и `pattern_mvvm.svg`;
-- `pattern_strategy.puml` и `pattern_strategy.svg`;
-- `pattern_factory.puml` и `pattern_factory.svg`;
-- `pattern_observer.puml` и `pattern_observer.svg`;
-- `pattern_state.puml` и `pattern_state.svg`;
-- `pattern_facade.puml` и `pattern_facade.svg`;
-- `architecture_oop.puml` и `architecture_oop.svg`;
-- `room_schema.puml` и `room_schema.svg`.
+`Compose UI → ViewModel / StateFlow → LibraryService → репозитории → Room → SQLite`.
+Reader и Librarian реализуют Person, Book и Periodical — Publication. LibraryBranch и Loan также реализуют LibraryEntity. Loan связывает читателей и издания отношением «многие ко многим».
 
-Проверка выполняется командами `plantuml -checkonly docs/images/*.puml` и `plantuml -tsvg -charset UTF-8 docs/images/*.puml`. Все десять SVG успешно разбираются XML-парсером; контактный лист визуальной проверки сохранён в `artifacts/diagram-qa/contact-sheet.png`.
-
-## Структура проекта
-
-- `core/src/commonMain/kotlin/domain` — иерархия предметной области, состояния, политика и фабрика;
-- `core/src/commonMain/kotlin/persistence` — Room-записи, DAO, база данных, репозитории и преобразователи;
-- `core/src/commonMain/kotlin/application` — application service;
-- `core/src/jvmMain/kotlin/persistence` — путь базы данных и JVM builder для операционной системы;
-- `app/src/commonMain/kotlin/di` — явный контейнер приложения;
-- `app/src/commonMain/kotlin/ui` — Compose UI и ViewModel;
-- `artifacts` — фактические результаты TDD, сборки и визуальной проверки.
+Применены Repository, MVVM, Strategy, Factory, Observer, State и Facade. Это локальная учебная система: без сетевого доступа, бронирования, штрафов, отдельных форм управления филиалами и сотрудниками. Экземпляры учитываются количеством, а не индивидуальными инвентарными номерами.
