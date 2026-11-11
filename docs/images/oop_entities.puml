@@ -73,10 +73,10 @@ Person <|.. Librarian
 Publication <|.. Book
 Publication <|.. Periodical
 
-Reader "1" -- "0..*" Loan
-Publication "1" -- "0..*" Loan
-Librarian "1" -- "0..*" Loan
-LibraryBranch "1" -- "0..*" Librarian
-LibraryBranch "1" -- "0..*" Publication
+Reader -- Loan
+Publication -- Loan
+Librarian -- Loan
+LibraryBranch -- Librarian
+LibraryBranch -- Publication
 
 @enduml

@@ -55,7 +55,7 @@ java -version
 
 ## Документы
 
-- [Пояснительная записка](docs/report.pdf): 100 страниц без титула и задания, 16 источников; полные листинги 26 производственных файлов, без А.1/А.2, с увеличенным интервалом.
+- [Пояснительная записка](docs/report.pdf): 104 страницы без титула и задания, 16 источников; полные листинги 26 производственных файлов, без А.1/А.2, с увеличенным интервалом.
 - [Презентация](presentation/course-oop-library.pdf): 15 слайдов.
 - [Памятка](prep/defense-notes.pdf): 3 страницы; не часть сдаваемой записки.
 
@@ -69,7 +69,7 @@ java -version
 ./gradlew :app:createDistributable --no-daemon
 ```
 
-В Windows замени `./gradlew` на `.\gradlew.bat`. Установочные пакеты создаются на соответствующей ОС (`:app:packageDmg`, `:app:packageMsi`, `:app:packageDeb`). Готовые пакеты для всех ОС не заявляются: подтверждённые результаты находятся в `artifacts/publication-verification.json`.
+В Windows замени `./gradlew` на `.\gradlew.bat`. Установочные пакеты создаются на соответствующей ОС (`:app:packageDmg`, `:app:packageMsi`, `:app:packageDeb`). Готовые пакеты для всех ОС не заявляются. Результаты проверки предыдущей версии сохранены в `artifacts/history/remote-baseline/publication-verification.json`; они не являются проверкой текущей записки.
 
 При установленном Typst документы можно собрать из корня:
 
