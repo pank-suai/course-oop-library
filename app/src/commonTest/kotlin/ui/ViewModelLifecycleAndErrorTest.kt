@@ -114,7 +114,8 @@ class ViewModelLifecycleAndErrorTest {
 
         vm.issue(Reader("reader", "Ada", 1815, "Address", "Org"), book())
 
-        assertEquals("Библиотекари недоступны", vm.state.first { it.error != null }.error)
+        assertEquals("Библиотекари недоступны", vm.actionState.first { it.error != null }.error)
+        assertEquals(null, vm.state.value.error)
     }
 
     @Test
@@ -204,13 +205,13 @@ class ViewModelLifecycleAndErrorTest {
         )
 
         vm.issue(Reader("reader", "Ada", 1815, "Address", "Org"), book())
-        assertEquals("Выдача не выполнена", withTimeout(1_000L) { vm.state.first { it.error != null } }.error)
+        assertEquals("Выдача не выполнена", withTimeout(1_000L) { vm.actionState.first { it.error != null } }.error)
         withTimeout(1_000L) {
             while (loans.refreshCalls == 0) delay(1L)
         }
         delay(10L)
 
-        assertEquals("Выдача не выполнена", vm.state.value.error)
+        assertEquals("Выдача не выполнена", vm.actionState.value.error)
         vm.close()
     }
 
@@ -250,10 +251,10 @@ class ViewModelLifecycleAndErrorTest {
         )
 
         vm.issue(Reader("reader", "Ada", 1815, "Address", "Org"), book())
-        assertEquals("Выдача не выполнена", withTimeout(1_000L) { vm.state.first { it.error != null } }.error)
+        assertEquals("Выдача не выполнена", withTimeout(1_000L) { vm.actionState.first { it.error != null } }.error)
 
         vm.issue(Reader("reader", "Ada", 1815, "Address", "Org"), book())
-        val recovered = withTimeout(1_000L) { vm.state.first { !it.isLoading && it.error == null } }
+        val recovered = withTimeout(1_000L) { vm.actionState.first { !it.isSaving && it.error == null } }
 
         assertEquals(null, recovered.error)
         assertEquals(2, service.issueCalls)
@@ -275,6 +276,9 @@ class ViewModelLifecycleAndErrorTest {
 
         vm.returnLoan(loan)
         assertEquals("Возврат не выполнен", withTimeout(1_000L) { vm.state.first { it.error != null } }.error)
+        assertEquals(null, vm.actionState.value.error)
+        vm.discardEditorError()
+        assertEquals("Возврат не выполнен", vm.state.value.error)
 
         vm.returnLoan(loan)
         val recovered = withTimeout(1_000L) { vm.state.first { !it.isLoading && it.error == null } }

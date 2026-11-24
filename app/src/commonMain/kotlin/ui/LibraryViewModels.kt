@@ -55,7 +55,7 @@ class ReadersViewModel(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) : AutoCloseable {
     private val errors = MutableStateFlow<String?>(null)
-    private val saveOperation = SaveOperation(scope) { errors.value = it }
+    private val saveOperation = SaveOperation(scope)
     val saveState: StateFlow<SaveUiState> = saveOperation.state
     private val searchQuery = MutableStateFlow("")
     val query: StateFlow<String> = searchQuery.asStateFlow()
@@ -72,6 +72,8 @@ class ReadersViewModel(
     fun setSearchQuery(value: String) {
         searchQuery.value = value
     }
+
+    fun discardEditorError() = saveOperation.discardEditorError()
 
     fun add(fullName: String, birthYear: String, address: String, organization: String): Boolean {
         val year = birthYear.toIntOrNull()
@@ -102,7 +104,7 @@ class PublicationsViewModel(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) : AutoCloseable {
     private val errors = MutableStateFlow<String?>(null)
-    private val saveOperation = SaveOperation(scope) { errors.value = it }
+    private val saveOperation = SaveOperation(scope)
     val saveState: StateFlow<SaveUiState> = saveOperation.state
     private val searchQuery = MutableStateFlow("")
     val query: StateFlow<String> = searchQuery.asStateFlow()
@@ -127,6 +129,8 @@ class PublicationsViewModel(
     fun setSearchQuery(value: String) {
         searchQuery.value = value
     }
+
+    fun discardEditorError() = saveOperation.discardEditorError()
 
     fun addBook(title: String, authors: String, publisher: String, year: String, copies: String, branchId: String, isbn: String) {
         val parsedYear = year.toIntOrNull()
@@ -175,8 +179,7 @@ class LoansViewModel(
     private val overdueRefreshIntervalMillis: Long = 60_000L,
     private val currentTimeMillis: () -> Long = ::systemTimeMillis,
 ) : AutoCloseable {
-    private val operationErrors = MutableStateFlow<String?>(null)
-    private val actionOperation = SaveOperation(scope) { operationErrors.value = it }
+    private val actionOperation = SaveOperation(scope)
     val actionState: StateFlow<SaveUiState> = actionOperation.state
     private val refreshErrors = MutableStateFlow<String?>(null)
     val state: StateFlow<CollectionUiState<LoanRow>> = combine(
@@ -192,7 +195,7 @@ class LoansViewModel(
         )
     }.catch { emit(CollectionUiState(isLoading = false, error = "Не удалось загрузить выдачи")) }
         .combine(refreshErrors) { value, error -> value.copy(error = error ?: value.error) }
-        .combine(operationErrors) { value, error -> value.copy(error = error ?: value.error) }
+        .combine(actionState) { value, action -> value.copy(error = action.backgroundError ?: value.error) }
         .stateIn(scope, SharingStarted.Eagerly, CollectionUiState())
 
     init {
@@ -206,6 +209,8 @@ class LoansViewModel(
             }
         }
     }
+
+    fun discardEditorError() = actionOperation.discardEditorError()
 
     fun issue(reader: Reader?, publication: Publication?) {
         if (reader == null || publication == null) {
@@ -222,7 +227,7 @@ class LoansViewModel(
     }
 
     fun returnLoan(loan: Loan) {
-        actionOperation.submit {
+        actionOperation.submit(reportInEditor = false) {
             @OptIn(kotlin.time.ExperimentalTime::class)
             service.returnLoan(loan.id, kotlin.time.Clock.System.now().toEpochMilliseconds())
         }

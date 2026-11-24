@@ -12,6 +12,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import di.ApplicationContainer
+import domain.Book
 import domain.LibraryBranch
 import domain.Librarian
 import domain.Reader
@@ -61,6 +62,62 @@ class CatalogInteractionTest {
         compose.onNodeWithText("Новый читатель").assertIsDisplayed()
         compose.onNodeWithText("Отмена").performClick()
         compose.onNodeWithText("Новый читатель").assertDoesNotExist()
+    }
+
+    @Test fun `cancelling reader editor discards its error before reopening`() {
+        compose.setContent { App(container) }
+        val error = "Введите имя, корректный год рождения, адрес и организацию"
+        compose.onNodeWithText("Добавить читателя").performClick()
+        compose.onNodeWithText("Сохранить").performClick()
+        compose.onNodeWithText(error).assertIsDisplayed()
+        compose.onNodeWithText("Отмена").performClick()
+        compose.onNodeWithText("Добавить читателя").performClick()
+        compose.onNodeWithText("Новый читатель").assertIsDisplayed()
+        compose.onNodeWithText(error).assertDoesNotExist()
+        compose.onNodeWithText("Сохранить").performClick()
+        compose.onNodeWithText(error).assertIsDisplayed()
+        compose.onNodeWithText("Отмена").performClick()
+        compose.onNodeWithText(error).assertDoesNotExist()
+    }
+
+    @Test fun `cancelling publication editor discards its error before reopening`() = runBlocking {
+        container.repositories.branches.save(LibraryBranch("qa-branch", "Учебный филиал", "Санкт-Петербург"))
+        compose.setContent { App(container) }
+        tab("Издания")
+        val error = "Введите название, авторов, издателя, год, число экземпляров и филиал"
+        compose.onNodeWithText("Добавить издание").performClick()
+        compose.onNodeWithText("Выберите: филиал").performScrollTo().performClick()
+        compose.onNodeWithText("Учебный филиал").performClick()
+        compose.onNodeWithText("Сохранить").performClick()
+        compose.onNodeWithText(error).assertExists()
+        compose.onNodeWithText("Отмена").performClick()
+        compose.onNodeWithText("Добавить издание").performClick()
+        compose.onNodeWithText("Новое издание").assertIsDisplayed()
+        compose.onNodeWithText(error).assertDoesNotExist()
+    }
+
+    @Test fun `cancelling loan editor discards its error before reopening`() = runBlocking {
+        container.repositories.branches.save(LibraryBranch("qa-branch", "Учебный филиал", "Санкт-Петербург"))
+        container.repositories.readers.save(Reader("qa-reader", "Ирина Иванова", 1997, "Санкт-Петербург", "ГУАП"))
+        container.repositories.publications.save(Book("qa-book", "Учебная книга", "Иван Иванов", "ГУАП", 2026, 1, 1, "qa-branch", null))
+        compose.setContent { App(container) }
+        tab("Выдачи")
+        val error = "Зарегистрируйте библиотекаря перед выдачей"
+        compose.waitUntil(5_000) { compose.onAllNodes(hasText("Оформить выдачу") and isEnabled()).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Оформить выдачу").performClick()
+        compose.onNodeWithText("Выберите: читатель").performClick()
+        compose.onNodeWithText("Ирина Иванова").performClick()
+        compose.onNodeWithText("Выберите: издание").performClick()
+        compose.onNodeWithText("Учебная книга").performClick()
+        compose.onNodeWithText("Выдать").performClick()
+        compose.waitUntil(5_000) {
+            compose.onAllNodesWithText(error).fetchSemanticsNodes().isNotEmpty() &&
+                compose.onAllNodes(hasText("Отмена") and isEnabled()).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("Отмена").performClick()
+        compose.onNodeWithText("Оформить выдачу").performClick()
+        compose.onNodeWithText("Новая выдача").assertIsDisplayed()
+        compose.onNodeWithText(error).assertDoesNotExist()
     }
 
     @Test fun `wide reader editor places name and year on one row`() {

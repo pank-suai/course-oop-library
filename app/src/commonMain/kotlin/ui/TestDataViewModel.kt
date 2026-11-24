@@ -13,7 +13,7 @@ internal class TestDataViewModel(
     private val source: TestDataSource,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) : AutoCloseable {
-    private val operation = SaveOperation(scope) {}
+    private val operation = SaveOperation(scope)
     val state = operation.state
     private val mutableMessage = MutableStateFlow<TestDataMessage?>(null)
     val message = mutableMessage.asStateFlow()

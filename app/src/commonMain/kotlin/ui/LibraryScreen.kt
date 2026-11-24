@@ -169,7 +169,10 @@ private fun ReadersPane(vm: ReadersViewModel, testData: TestDataViewModel, paddi
         item {
             PaneHeader("Читатели", "Регистрация и поиск читателей") {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    CatalogButton("Добавить читателя", LibraryIcon.Add) { editor = true }
+                    CatalogButton("Добавить читателя", LibraryIcon.Add, enabled = !save.isSaving) {
+                        vm.discardEditorError()
+                        editor = true
+                    }
                     SecondaryButton("Тестовые читатели", !testState.isSaving, testData::addReaders)
                 }
             }
@@ -177,9 +180,10 @@ private fun ReadersPane(vm: ReadersViewModel, testData: TestDataViewModel, paddi
         item { SearchField(query, vm::setSearchQuery, "Поиск по имени") }
         if (testState.error != null) item { Notice("Не удалось добавить тестовые данные", error = true) }
         testMessage?.takeIf { it.kind == "readers" }?.let { message -> item { Notice(message.text) } }
-        if (state.error != null && !editor) item { Notice(state.error!!, error = true) }
+        val error = state.error
+        if (error != null && !editor) item { Notice(error, error = true) }
         if (state.isLoading) item { Notice("Загружаем читателей", loading = true) }
-        else if (state.items.isEmpty() && state.error == null) item {
+        else if (state.items.isEmpty() && error == null) item {
             EmptyState(if (query.isBlank()) "Читателей пока нет" else "Ничего не найдено",
                 if (query.isBlank()) "Добавьте первого читателя с помощью кнопки выше." else "Попробуйте другое имя или очистите поиск.",
                 if (query.isNotBlank()) ({ vm.setSearchQuery("") }) else null)
@@ -199,7 +203,10 @@ private fun ReadersPane(vm: ReadersViewModel, testData: TestDataViewModel, paddi
             }
         }
     }
-    if (editor) ReaderEditor(vm, save, narrow) { editor = false }
+    if (editor) ReaderEditor(vm, save, narrow) {
+        vm.discardEditorError()
+        editor = false
+    }
     deleted?.let { reader ->
         ConfirmDialog("Удалить читателя?", "${reader.fullName}. Если у читателя есть история выдач, удаление будет запрещено.", "Удалить",
             onDismiss = { deleted = null }, onConfirm = { deleted = null; vm.delete(reader) })
@@ -239,7 +246,10 @@ private fun PublicationsPane(vm: PublicationsViewModel, testData: TestDataViewMo
         item {
             PaneHeader("Издания", "Книги и периодика в библиотечном фонде") {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    CatalogButton("Добавить издание", LibraryIcon.Add) { editor = true }
+                    CatalogButton("Добавить издание", LibraryIcon.Add, enabled = !save.isSaving) {
+                        vm.discardEditorError()
+                        editor = true
+                    }
                     SecondaryButton("Тестовые книги", !testState.isSaving, testData::addBooks)
                 }
             }
@@ -281,7 +291,10 @@ private fun PublicationsPane(vm: PublicationsViewModel, testData: TestDataViewMo
             }
         }
     }
-    if (editor) PublicationEditor(vm, save, branches.items, narrow) { editor = false }
+    if (editor) PublicationEditor(vm, save, branches.items, narrow) {
+        vm.discardEditorError()
+        editor = false
+    }
     deleted?.let { publication ->
         ConfirmDialog("Удалить издание?", "«${publication.title}». Издание с историей выдач удалить нельзя.", "Удалить",
             onDismiss = { deleted = null }, onConfirm = { deleted = null; vm.delete(publication) })
@@ -338,12 +351,16 @@ private fun LoansPane(vm: LoansViewModel, readers: List<Reader>, publications: L
     Catalogue(padding) {
         item {
             PaneHeader("Выдачи", "Выдача, возврат и история пользования") {
-                CatalogButton("Оформить выдачу", LibraryIcon.Add, enabled = !state.isLoading && !action.isSaving) { editor = true }
+                CatalogButton("Оформить выдачу", LibraryIcon.Add, enabled = !state.isLoading && !action.isSaving) {
+                    vm.discardEditorError()
+                    editor = true
+                }
             }
         }
-        if (state.error != null && !editor) item { Notice(state.error!!, error = true) }
+        val error = state.error
+        if (error != null && !editor) item { Notice(error, error = true) }
         if (state.isLoading) item { Notice("Загружаем выдачи", loading = true) }
-        else if (state.items.isEmpty() && state.error == null) item { EmptyState("Выдач пока нет", "Выберите читателя и доступное издание, чтобы оформить первую выдачу.") }
+        else if (state.items.isEmpty() && error == null) item { EmptyState("Выдач пока нет", "Выберите читателя и доступное издание, чтобы оформить первую выдачу.") }
         if (!state.isLoading && state.items.isNotEmpty()) {
             item { ListHeading("История выдач", state.items.size) }
             items(state.items, key = { it.loan.id }) { row ->
@@ -359,7 +376,10 @@ private fun LoansPane(vm: LoansViewModel, readers: List<Reader>, publications: L
             }
         }
     }
-    if (editor) LoanEditor(vm, action, readers, publications, narrow) { editor = false }
+    if (editor) LoanEditor(vm, action, readers, publications, narrow) {
+        vm.discardEditorError()
+        editor = false
+    }
 }
 
 @Composable
