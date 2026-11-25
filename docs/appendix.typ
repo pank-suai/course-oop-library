@@ -78,6 +78,12 @@
 
 
 #v(12pt)
+#block(sticky: true)[#text("app/src/jvmMain/kotlin/ui/BookCoverFileJvm.kt")]
+
+#raw(read("../app/src/jvmMain/kotlin/ui/BookCoverFileJvm.kt"), lang: "kotlin", block: true)
+
+
+#v(12pt)
 #block(sticky: true)[#text("app/src/jvmMain/kotlin/ui/LoanDatesJvm.kt")]
 
 #raw(read("../app/src/jvmMain/kotlin/ui/LoanDatesJvm.kt"), lang: "kotlin", block: true)

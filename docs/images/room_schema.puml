@@ -49,6 +49,7 @@ entity publications {
   publisher: TEXT
   publicationYear: INTEGER
   isbn: TEXT?
+  coverImage: BLOB?
   issueNumber: INTEGER?
   totalCopies: INTEGER
   availableCopies: INTEGER

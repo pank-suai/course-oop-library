@@ -1,6 +1,6 @@
-#let test-count = 70
+#let test-count = 74
 #let core-test-count = 17
-#let app-test-count = 53
+#let app-test-count = 57
 #let test-rows = (
   (name: "DomainRewriteTest", count: 4, description: "Проверки библиотечных объектов и правил"),
   (name: "ControlScenarioTest", count: 1, description: "Связанный демонстрационный набор без повторов"),
@@ -9,7 +9,7 @@
   (name: "ReviewRegressionTest", count: 5, description: "Остаток, лимит выдач, состояние и дата возврата"),
   (name: "RoomInvariantTest", count: 2, description: "Согласованность сохранения и повторные операции"),
   (name: "RoomPersistenceTest", count: 2, description: "Запись, связи и повторное открытие базы"),
-  (name: "CatalogInteractionTest", count: 15, description: "Формы, повторное открытие, поиск, выдача, возврат и адаптивное окно"),
+  (name: "CatalogInteractionTest", count: 19, description: "Формы, обложки, редактирование, выдача и возврат"),
   (name: "LibraryDesignTest", count: 3, description: "Параметры темы, контраст и навигация"),
   (name: "LoanDateFormatterTest", count: 1, description: "Понятное представление даты выдачи"),
   (name: "LoansSelectionTest", count: 3, description: "Очистка устаревшего выбора издания"),

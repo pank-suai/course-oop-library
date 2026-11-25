@@ -51,6 +51,7 @@ class "Филиал\nLibraryBranch" as LibraryBranch {
 }
 class "Книга\nBook" as Book {
   +isbn: String?
+  +cover: BookCover?
 }
 class "Периодическое издание\nPeriodical" as Periodical {
   +issueNumber: Int

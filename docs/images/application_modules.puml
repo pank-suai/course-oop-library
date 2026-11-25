@@ -1,0 +1,16 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 17
+skinparam componentStyle uml2
+skinparam componentBackgroundColor #F6F8FA
+skinparam componentBorderColor #303840
+skinparam ArrowColor #303840
+skinparam ArrowFontSize 16
+skinparam nodesep 38
+component "app\nОкно и модели\nпредставления" as App
+component "core\nБиблиотечные объекты,\nправила и хранение" as Core
+App ..> Core : зависит от
+@enduml
