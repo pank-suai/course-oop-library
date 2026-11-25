@@ -42,6 +42,18 @@ data class LibraryBranch(
     }
 }
 
+/** Encoded thumbnail stored with the book, independent of its original file. */
+class BookCover(bytes: ByteArray) {
+    init { require(bytes.size in 1..MAX_BYTES) { "Размер обложки вне допустимого диапазона" } }
+
+    private val data = bytes.copyOf()
+    fun toByteArray(): ByteArray = data.copyOf()
+    override fun equals(other: Any?): Boolean = other is BookCover && data.contentEquals(other.data)
+    override fun hashCode(): Int = data.contentHashCode()
+
+    companion object { const val MAX_BYTES = 512 * 1024 }
+}
+
 /** A book in the collection. */
 data class Book(
     override val id: String,
@@ -52,8 +64,9 @@ data class Book(
     override val totalCopies: Int,
     override val availableCopies: Int,
     override val branchId: String,
- val isbn: String?,
- ) : Publication {
+    val isbn: String?,
+    val cover: BookCover? = null,
+) : Publication {
     init {
         validateText(title, "title")
         validateText(authors, "authors")

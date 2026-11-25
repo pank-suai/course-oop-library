@@ -60,6 +60,7 @@ data class PublicationRecord(
     val totalCopies: Int,
     val availableCopies: Int,
     val branchId: String,
+    val coverImage: ByteArray? = null,
 )
 
 @Entity(

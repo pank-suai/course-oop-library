@@ -1,6 +1,7 @@
 package ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.hoverable
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -30,7 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import di.ApplicationContainer
 import domain.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.launch
 
 internal fun resolveAvailableSelection(selectedId: String?, availableIds: Set<String>): String? =
     selectedId?.takeIf(availableIds::contains)
@@ -242,6 +246,7 @@ private fun PublicationsPane(vm: PublicationsViewModel, testData: TestDataViewMo
     val query by vm.query.collectAsState()
     var editor by remember { mutableStateOf(false) }
     var deleted by remember { mutableStateOf<Publication?>(null) }
+    var editingCover by remember { mutableStateOf<Book?>(null) }
     Catalogue(padding) {
         item {
             PaneHeader("Издания", "Книги и периодика в библиотечном фонде") {
@@ -286,10 +291,25 @@ private fun PublicationsPane(vm: PublicationsViewModel, testData: TestDataViewMo
                         val branchName = branches.items.firstOrNull { it.id == publication.branchId }?.name ?: "Филиал недоступен"
                         Text("$branchName · Свободно ${publication.availableCopies} из ${publication.totalCopies}", style = MaterialTheme.typography.bodySmall)
                     }
-                    QuietAction("Удалить", "Удалить издание ${publication.title}", LibraryIcon.Delete) { deleted = publication }
+                    Column {
+                        if (publication is Book) QuietAction("Обложка", "Изменить обложку: ${publication.title}", LibraryIcon.MenuBook, !save.isSaving) {
+                            vm.discardEditorError()
+                            editingCover = publication
+                        }
+                        QuietAction("Удалить", "Удалить издание ${publication.title}", LibraryIcon.Delete) { deleted = publication }
+                    }
                 }
             }
         }
+    }
+    editingCover?.let { book ->
+        val draft = remember(book.id) { CoverDraft(book.cover) }
+        val revision = remember { save.revision }
+        LaunchedEffect(save.revision) { if (save.revision > revision) editingCover = null }
+        EditorDialog("Обложка книги", book.title, save.isSaving, save.error,
+            onDismiss = { vm.discardEditorError(); editingCover = null },
+            saveEnabled = !draft.loading && draft.value != book.cover,
+            onSave = { vm.updateCover(book.id, draft.value) }) { CoverField(draft, !save.isSaving) }
     }
     if (editor) PublicationEditor(vm, save, branches.items, narrow) {
         vm.discardEditorError()
@@ -312,14 +332,15 @@ private fun PublicationEditor(vm: PublicationsViewModel, save: SaveUiState, bran
     var isbn by remember { mutableStateOf("") }
     var issue by remember { mutableStateOf("1") }
     var branchId by remember { mutableStateOf<String?>(null) }
+    val cover = remember { CoverDraft(null) }
     val validBranch = branches.firstOrNull { it.id == branchId }
     val revision = remember { save.revision }
     LaunchedEffect(save.revision) { if (save.revision > revision) onDismiss() }
     EditorDialog("Новое издание", "Библиографические сведения и место хранения", save.isSaving, save.error, onDismiss,
-        saveEnabled = validBranch != null && !save.isSaving,
+        saveEnabled = validBranch != null && !cover.loading,
         onSave = {
             if (periodical) vm.addPeriodical(title, authors, publisher, year, issue, copies, validBranch?.id ?: "")
-            else vm.addBook(title, authors, publisher, year, copies, validBranch?.id ?: "", isbn)
+            else vm.addBook(title, authors, publisher, year, copies, validBranch?.id ?: "", isbn, cover.value)
         }) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(selected = !periodical, onClick = { periodical = false }, enabled = !save.isSaving,
@@ -340,7 +361,50 @@ private fun PublicationEditor(vm: PublicationsViewModel, save: SaveUiState, bran
         }
         ChoiceField("Филиал", validBranch?.name, branches.map { it.id to it.name }, !save.isSaving) { branchId = it }
         if (branches.isEmpty()) Notice("Филиалов пока нет. Загрузите демонстрационные данные в разделе «Архитектура».")
+        if (!periodical) CoverField(cover, !save.isSaving)
     }
+}
+
+private class CoverDraft(initial: BookCover?) {
+    var value by mutableStateOf(initial)
+    var loading by mutableStateOf(false)
+    var error by mutableStateOf<String?>(null)
+}
+
+@Composable
+private fun CoverField(draft: CoverDraft, enabled: Boolean) {
+    val pick = LocalBookCoverPicker.current
+    val scope = rememberCoroutineScope()
+    val preview = rememberCoverBitmap(draft.value)
+    Text("Обложка (необязательно)", style = MaterialTheme.typography.labelLarge)
+    if (preview != null) {
+        Image(preview, contentDescription = "Предпросмотр обложки", modifier = Modifier.size(68.dp, 96.dp), contentScale = ContentScale.Fit)
+    }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        SecondaryButton(if (draft.loading) "Загружаем обложку…" else "Выбрать обложку", enabled && !draft.loading) {
+            if (draft.loading) return@SecondaryButton
+            draft.loading = true
+            draft.error = null
+            scope.launch {
+                try {
+                    pick()?.let { draft.value = it }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (failure: CoverImportException) {
+                    draft.error = failure.message
+                } catch (_: Exception) {
+                    draft.error = "Не удалось выбрать обложку"
+                } finally {
+                    draft.loading = false
+                }
+            }
+        }
+        if (draft.value != null) SecondaryButton("Убрать обложку", enabled && !draft.loading) {
+            draft.value = null
+            draft.error = null
+        }
+    }
+    draft.error?.let { Notice(it, error = true) }
 }
 
 @Composable

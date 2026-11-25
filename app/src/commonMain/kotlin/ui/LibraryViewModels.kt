@@ -1,6 +1,7 @@
 package ui
 
 import domain.Book
+import domain.BookCover
 import domain.IdGenerator
 import domain.LibraryBranch
 import domain.LibraryService
@@ -132,7 +133,7 @@ class PublicationsViewModel(
 
     fun discardEditorError() = saveOperation.discardEditorError()
 
-    fun addBook(title: String, authors: String, publisher: String, year: String, copies: String, branchId: String, isbn: String) {
+    fun addBook(title: String, authors: String, publisher: String, year: String, copies: String, branchId: String, isbn: String, cover: BookCover? = null) {
         val parsedYear = year.toIntOrNull()
         val parsedCopies = copies.toIntOrNull()
         if (title.isBlank() || authors.isBlank() || publisher.isBlank() || parsedYear == null || parsedCopies == null || branchId.isBlank()) {
@@ -140,7 +141,7 @@ class PublicationsViewModel(
             return
         }
         saveOperation.submit {
-            repository.save(Book(ids.nextId(), title, authors, publisher, parsedYear, parsedCopies, parsedCopies, branchId, isbn.ifBlank { null }))
+            repository.save(Book(ids.nextId(), title, authors, publisher, parsedYear, parsedCopies, parsedCopies, branchId, isbn.ifBlank { null }, cover))
         }
     }
 
@@ -155,6 +156,10 @@ class PublicationsViewModel(
         saveOperation.submit {
             repository.save(Periodical(ids.nextId(), title, editors, publisher, parsedYear, parsedCopies, parsedCopies, branchId, parsedIssue))
         }
+    }
+
+    fun updateCover(id: String, cover: BookCover?) = saveOperation.submit {
+        check(repository.updateBookCover(id, cover)) { "Книги больше нет в каталоге" }
     }
 
     fun delete(publication: Publication) {

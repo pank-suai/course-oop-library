@@ -83,7 +83,8 @@ interface LibraryDao {
             publicationYear = :publicationYear,
             isbn = :isbn,
             issueNumber = :issueNumber,
-            branchId = :branchId
+            branchId = :branchId,
+            coverImage = :coverImage
         WHERE id = :id
     """)
     suspend fun updatePublicationMetadata(
@@ -96,6 +97,7 @@ interface LibraryDao {
         isbn: String?,
         issueNumber: Int?,
         branchId: String,
+        coverImage: ByteArray?,
     ): Int
 
     @Transaction
@@ -111,9 +113,13 @@ interface LibraryDao {
                 record.isbn,
                 record.issueNumber,
                 record.branchId,
+                record.coverImage,
             )
         }
     }
+
+    @Query("UPDATE publications SET coverImage = :image WHERE id = :id AND kind = 'BOOK'")
+    suspend fun updateBookCover(id: String, image: ByteArray?): Int
 
     @Query("UPDATE publications SET availableCopies = availableCopies - 1 WHERE id = :publicationId AND availableCopies > 0")
     suspend fun decrementAvailable(publicationId: String): Int

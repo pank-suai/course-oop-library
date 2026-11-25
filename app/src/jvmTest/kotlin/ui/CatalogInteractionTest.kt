@@ -182,6 +182,82 @@ class CatalogInteractionTest {
         snapshot("cleared-database")
     }
 
+    @Test fun `book form offers local cover selection`() = runBlocking {
+        container.repositories.branches.save(LibraryBranch("qa-branch", "Учебный филиал", "Санкт-Петербург"))
+        compose.setContent { App(container) }
+        tab("Издания")
+        compose.onNodeWithText("Добавить издание").performClick()
+        compose.onNodeWithText("Выбрать обложку").performScrollTo().assertIsDisplayed().assertHasClickAction()
+        compose.onNodeWithText("Периодика").performScrollTo().performClick()
+        compose.onNodeWithText("Выбрать обложку").assertDoesNotExist()
+    }
+
+    @Test fun `selected local image shows in the catalogue after reopening the database`() = runBlocking {
+        val image = File(directory, "cover.png")
+        val pixels = BufferedImage(40, 60, BufferedImage.TYPE_INT_RGB)
+        pixels.createGraphics().let { g ->
+            try { g.color = java.awt.Color.RED; g.fillRect(0, 0, 40, 60) } finally { g.dispose() }
+        }
+        assertTrue(ImageIO.write(pixels, "png", image))
+        container.repositories.branches.save(LibraryBranch("qa-branch", "Учебный филиал", "Санкт-Петербург"))
+        val pick: suspend () -> domain.BookCover? = { importBookCover(image) }
+        compose.setContent { CompositionLocalProvider(LocalBookCoverPicker provides pick) { App(container) } }
+        tab("Издания")
+        compose.onNodeWithText("Добавить издание").performClick()
+        field("Название", "Своя обложка")
+        field("Авторы", "Иван Иванов")
+        field("Издательство", "ГУАП")
+        field("Год издания", "2026")
+        field("Экземпляры", "2")
+        compose.onNodeWithText("Выберите: филиал").performScrollTo().performClick()
+        compose.onNodeWithText("Учебный филиал").performClick()
+        compose.onNodeWithText("Выбрать обложку").performScrollTo().performClick()
+        val preview = compose.onNodeWithContentDescription("Предпросмотр обложки")
+        preview.performScrollTo().assertIsDisplayed()
+        val sample = preview.captureToImage().toPixelMap()
+        val red = sample[sample.width / 2, sample.height / 2]
+        assertTrue(red.red > 0.8f && red.green < 0.2f && red.blue < 0.2f)
+        assertTrue(image.delete())
+        compose.onNodeWithText("Сохранить").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("Обложка: Своя обложка").fetchSemanticsNodes().isNotEmpty() }
+        val stored = (container.repositories.publications.publicationsOnce().single() as Book).cover
+        kotlin.test.assertNotNull(stored)
+        tab("Читатели")
+        container.close()
+        val db = buildDatabase(databaseBuilder(File(directory, "library.db")))
+        try {
+            val reloaded = persistence.RoomRepositoryBundle(db).publications.publicationsOnce().single() as Book
+            assertEquals(stored, reloaded.cover)
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test fun `catalogue can set and remove a cover on an existing book`() = runBlocking {
+        val image = File(directory, "cover.png")
+        assertTrue(ImageIO.write(BufferedImage(40, 60, BufferedImage.TYPE_INT_RGB), "png", image))
+        container.repositories.branches.save(LibraryBranch("qa-branch", "Учебный филиал", "Санкт-Петербург"))
+        val book = Book("existing", "Уже в каталоге", "Иван Иванов", "ГУАП", 2026, 3, 3, "qa-branch", null)
+        container.repositories.publications.save(book)
+        val pick: suspend () -> domain.BookCover? = { importBookCover(image) }
+        compose.setContent { CompositionLocalProvider(LocalBookCoverPicker provides pick) { App(container) } }
+        tab("Издания")
+        val edit = compose.onNodeWithContentDescription("Изменить обложку: Уже в каталоге")
+        edit.performClick()
+        compose.onNodeWithText("Выбрать обложку").performClick()
+        compose.onNodeWithContentDescription("Предпросмотр обложки").assertIsDisplayed()
+        compose.onNodeWithText("Сохранить").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("Обложка: Уже в каталоге").fetchSemanticsNodes().isNotEmpty() }
+        val changed = container.repositories.publications.findById(book.id) as Book
+        kotlin.test.assertNotNull(changed.cover)
+        assertEquals(book, changed.copy(cover = null))
+        edit.performClick()
+        compose.onNodeWithText("Убрать обложку").performClick()
+        compose.onNodeWithText("Сохранить").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("Обложка недоступна: Уже в каталоге").fetchSemanticsNodes().isNotEmpty() }
+        assertEquals(book, container.repositories.publications.findById(book.id))
+    }
+
     @Test fun `book and periodical forms persist actual records and a loan returns only once`() = runBlocking {
         container.repositories.branches.save(LibraryBranch("qa-branch", "Учебный филиал", "Санкт-Петербург"))
         container.repositories.librarians.save(Librarian("qa-librarian", "Библиотекарь для проверки", "Библиотекарь", "qa-branch"))

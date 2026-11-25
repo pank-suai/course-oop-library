@@ -1,6 +1,7 @@
 package persistence
 
 import domain.Book
+import domain.BookCover
 import domain.ClearAllResult
 import domain.DemoData
 import domain.LibraryBranch
@@ -40,6 +41,7 @@ interface PublicationRepository {
     suspend fun publicationsOnce(): List<Publication>
     suspend fun findById(id: String): Publication?
     suspend fun save(publication: Publication)
+    suspend fun updateBookCover(id: String, cover: BookCover?): Boolean
     suspend fun delete(id: String)
 }
 
@@ -105,6 +107,7 @@ class RoomPublicationRepository(private val dao: LibraryDao) : PublicationReposi
     override suspend fun publicationsOnce(): List<Publication> = dao.getPublications().map { publicationRecordToDomain(it) }
     override suspend fun findById(id: String): Publication? = dao.getPublication(id)?.let { publicationRecordToDomain(it) }
     override suspend fun save(publication: Publication) = dao.savePublication(publication.toRecord())
+    override suspend fun updateBookCover(id: String, cover: BookCover?): Boolean = dao.updateBookCover(id, cover?.toByteArray()) == 1
     override suspend fun delete(id: String) {
         try {
             when (dao.deletePublicationIfUnused(id)) {
@@ -184,12 +187,13 @@ private fun librarianRecordToDomain(record: LibrarianRecord) = Librarian(record.
 private fun LibraryBranch.toRecord() = BranchRecord(id, name, address)
 private fun branchRecordToDomain(record: BranchRecord) = LibraryBranch(record.id, record.name, record.address)
 private fun Publication.toRecord() = when (this) {
-    is Book -> PublicationRecord(id, "BOOK", title, authors, publisher, publicationYear, isbn, null, totalCopies, availableCopies, branchId)
+    is Book -> PublicationRecord(id, "BOOK", title, authors, publisher, publicationYear, isbn, null, totalCopies, availableCopies, branchId, cover?.toByteArray())
     is Periodical -> PublicationRecord(id, "PERIODICAL", title, authors, publisher, publicationYear, null, issueNumber, totalCopies, availableCopies, branchId)
     else -> error("Неподдерживаемый тип издания")
 }
 private fun publicationRecordToDomain(record: PublicationRecord): Publication = when (record.kind) {
-    "BOOK" -> Book(record.id, record.title, record.authors, record.publisher, record.publicationYear, record.totalCopies, record.availableCopies, record.branchId, record.isbn)
+    "BOOK" -> Book(record.id, record.title, record.authors, record.publisher, record.publicationYear, record.totalCopies,
+        record.availableCopies, record.branchId, record.isbn, record.coverImage?.let(::BookCover))
     "PERIODICAL" -> Periodical(record.id, record.title, record.authors, record.publisher, record.publicationYear, record.totalCopies, record.availableCopies, record.branchId, record.issueNumber ?: 1)
     else -> error("Неизвестный тип издания: ${record.kind}")
 }

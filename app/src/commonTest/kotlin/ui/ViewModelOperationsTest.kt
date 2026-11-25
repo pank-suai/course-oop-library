@@ -103,6 +103,7 @@ private class FakeReaderRepository(initial: List<Reader>) : ReaderRepository {
 }
 
 private class FakePublicationRepository(initial: List<Publication>) : PublicationRepository {
+    override suspend fun updateBookCover(id: String, cover: domain.BookCover?): Boolean = error("Not used in this test")
     private val values = MutableStateFlow(initial)
     override val publications: Flow<List<Publication>> = values
     override suspend fun publicationsOnce(): List<Publication> = values.value
