@@ -41,7 +41,7 @@ interface PublicationRepository {
     suspend fun publicationsOnce(): List<Publication>
     suspend fun findById(id: String): Publication?
     suspend fun save(publication: Publication)
-    suspend fun updateBookCover(id: String, cover: BookCover?): Boolean
+    suspend fun editPublication(publication: Publication)
     suspend fun delete(id: String)
 }
 
@@ -107,7 +107,7 @@ class RoomPublicationRepository(private val dao: LibraryDao) : PublicationReposi
     override suspend fun publicationsOnce(): List<Publication> = dao.getPublications().map { publicationRecordToDomain(it) }
     override suspend fun findById(id: String): Publication? = dao.getPublication(id)?.let { publicationRecordToDomain(it) }
     override suspend fun save(publication: Publication) = dao.savePublication(publication.toRecord())
-    override suspend fun updateBookCover(id: String, cover: BookCover?): Boolean = dao.updateBookCover(id, cover?.toByteArray()) == 1
+    override suspend fun editPublication(publication: Publication) = dao.editPublication(publication.toRecord())
     override suspend fun delete(id: String) {
         try {
             when (dao.deletePublicationIfUnused(id)) {

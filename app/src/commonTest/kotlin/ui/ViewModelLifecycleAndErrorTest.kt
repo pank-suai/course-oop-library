@@ -345,7 +345,7 @@ private class CancellingReaders : ReaderRepository {
 }
 
 private class StaticPublications : PublicationRepository {
-    override suspend fun updateBookCover(id: String, cover: domain.BookCover?): Boolean = error("Not used in this test")
+    override suspend fun editPublication(publication: Publication): Unit = error("Not used in this test")
     private val value = book()
     override val publications: Flow<List<Publication>> = MutableStateFlow(listOf(value))
     override suspend fun publicationsOnce() = listOf(value)
@@ -355,7 +355,7 @@ private class StaticPublications : PublicationRepository {
 }
 
 private class CancellingPublications : PublicationRepository {
-    override suspend fun updateBookCover(id: String, cover: domain.BookCover?): Boolean = error("Not used in this test")
+    override suspend fun editPublication(publication: Publication): Unit = error("Not used in this test")
     val value = book()
     override val publications: Flow<List<Publication>> = MutableStateFlow(listOf(value))
     override suspend fun publicationsOnce() = listOf(value)

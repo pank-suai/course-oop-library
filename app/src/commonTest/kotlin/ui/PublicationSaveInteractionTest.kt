@@ -45,7 +45,7 @@ class PublicationSaveInteractionTest {
 }
 
 private class PendingPublications : PublicationRepository {
-    override suspend fun updateBookCover(id: String, cover: domain.BookCover?): Boolean = error("Not used in this test")
+    override suspend fun editPublication(publication: Publication): Unit = error("Not used in this test")
     val release = CompletableDeferred<Unit>()
     var writes = 0
     private val values = MutableStateFlow<List<Publication>>(emptyList())

@@ -158,8 +158,21 @@ class PublicationsViewModel(
         }
     }
 
-    fun updateCover(id: String, cover: BookCover?) = saveOperation.submit {
-        check(repository.updateBookCover(id, cover)) { "Книги больше нет в каталоге" }
+    fun editPublication(original: Publication, title: String, authors: String, publisher: String, year: String,
+                        copies: String, branchId: String, isbn: String, issue: String, cover: BookCover?) {
+        saveOperation.submit {
+            val y = year.toIntOrNull() ?: error("Введите год издания")
+            val n = copies.toIntOrNull() ?: error("Введите число экземпляров")
+            val updated = when (original) {
+                is Book -> original.copy(title = title.trim(), authors = authors.trim(), publisher = publisher.trim(),
+                    publicationYear = y, totalCopies = n, availableCopies = 0, branchId = branchId, isbn = isbn.trim().ifEmpty { null }, cover = cover)
+                is Periodical -> original.copy(title = title.trim(), authors = authors.trim(), publisher = publisher.trim(),
+                    publicationYear = y, totalCopies = n, availableCopies = 0, branchId = branchId,
+                    issueNumber = issue.toIntOrNull() ?: error("Введите номер выпуска"))
+                else -> error("Неизвестный вид издания")
+            }
+            repository.editPublication(updated)
+        }
     }
 
     fun delete(publication: Publication) {

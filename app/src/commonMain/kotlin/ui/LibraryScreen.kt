@@ -82,7 +82,7 @@ fun App(container: ApplicationContainer) {
                         0 -> ReadersPane(readers, testData, pagePadding, narrow)
                         1 -> PublicationsPane(publications, testData, pagePadding, narrow)
                         2 -> LoansPane(loans, allReaders, allPublications, pagePadding, narrow)
-                        else -> ArchitecturePane(administration, pagePadding)
+                        else -> SettingsPane(administration, pagePadding)
                     }
                 }
             }
@@ -92,7 +92,7 @@ fun App(container: ApplicationContainer) {
 
 @Composable
 private fun LibraryNavigation(selected: Int, width: Dp, onSelected: (Int) -> Unit) {
-    val icons = listOf(LibraryIcon.Group, LibraryIcon.MenuBook, LibraryIcon.SwapHoriz, LibraryIcon.AccountTree)
+    val icons = listOf(LibraryIcon.Group, LibraryIcon.MenuBook, LibraryIcon.SwapHoriz, LibraryIcon.Settings)
     Surface(Modifier.width(width).fillMaxHeight(), shape = RoundedCornerShape(24.dp), color = LibraryDesign.surface) {
         Column(Modifier.padding(16.dp)) {
             Row(Modifier.padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically,
@@ -122,10 +122,6 @@ private fun LibraryNavigation(selected: Int, width: Dp, onSelected: (Int) -> Uni
                 }
                 Spacer(Modifier.height(6.dp))
             }
-            Spacer(Modifier.weight(1f))
-            HorizontalDivider(color = LibraryDesign.divider)
-            Spacer(Modifier.height(16.dp))
-            Text("Данные на компьютере", style = MaterialTheme.typography.bodySmall, color = LibraryDesign.secondaryText)
         }
     }
 }
@@ -246,7 +242,7 @@ private fun PublicationsPane(vm: PublicationsViewModel, testData: TestDataViewMo
     val query by vm.query.collectAsState()
     var editor by remember { mutableStateOf(false) }
     var deleted by remember { mutableStateOf<Publication?>(null) }
-    var editingCover by remember { mutableStateOf<Book?>(null) }
+    var selected by remember { mutableStateOf<Publication?>(null) }
     Catalogue(padding) {
         item {
             PaneHeader("Издания", "Книги и периодика в библиотечном фонде") {
@@ -292,9 +288,10 @@ private fun PublicationsPane(vm: PublicationsViewModel, testData: TestDataViewMo
                         Text("$branchName · Свободно ${publication.availableCopies} из ${publication.totalCopies}", style = MaterialTheme.typography.bodySmall)
                     }
                     Column {
-                        if (publication is Book) QuietAction("Обложка", "Изменить обложку: ${publication.title}", LibraryIcon.MenuBook, !save.isSaving) {
+                        QuietAction("Изменить", "Редактировать: ${publication.title}", LibraryIcon.Edit, !save.isSaving) {
                             vm.discardEditorError()
-                            editingCover = publication
+                            selected = publication
+                            editor = true
                         }
                         QuietAction("Удалить", "Удалить издание ${publication.title}", LibraryIcon.Delete) { deleted = publication }
                     }
@@ -302,18 +299,10 @@ private fun PublicationsPane(vm: PublicationsViewModel, testData: TestDataViewMo
             }
         }
     }
-    editingCover?.let { book ->
-        val draft = remember(book.id) { CoverDraft(book.cover) }
-        val revision = remember { save.revision }
-        LaunchedEffect(save.revision) { if (save.revision > revision) editingCover = null }
-        EditorDialog("Обложка книги", book.title, save.isSaving, save.error,
-            onDismiss = { vm.discardEditorError(); editingCover = null },
-            saveEnabled = !draft.loading && draft.value != book.cover,
-            onSave = { vm.updateCover(book.id, draft.value) }) { CoverField(draft, !save.isSaving) }
-    }
-    if (editor) PublicationEditor(vm, save, branches.items, narrow) {
+    if (editor) PublicationEditor(vm, save, branches.items, narrow, selected) {
         vm.discardEditorError()
         editor = false
+        selected = null
     }
     deleted?.let { publication ->
         ConfirmDialog("Удалить издание?", "«${publication.title}». Издание с историей выдач удалить нельзя.", "Удалить",
@@ -322,27 +311,28 @@ private fun PublicationsPane(vm: PublicationsViewModel, testData: TestDataViewMo
 }
 
 @Composable
-private fun PublicationEditor(vm: PublicationsViewModel, save: SaveUiState, branches: List<LibraryBranch>, narrow: Boolean, onDismiss: () -> Unit) {
-    var periodical by remember { mutableStateOf(false) }
-    var title by remember { mutableStateOf("") }
-    var authors by remember { mutableStateOf("") }
-    var publisher by remember { mutableStateOf("") }
-    var year by remember { mutableStateOf("") }
-    var copies by remember { mutableStateOf("") }
-    var isbn by remember { mutableStateOf("") }
-    var issue by remember { mutableStateOf("1") }
-    var branchId by remember { mutableStateOf<String?>(null) }
-    val cover = remember { CoverDraft(null) }
+private fun PublicationEditor(vm: PublicationsViewModel, save: SaveUiState, branches: List<LibraryBranch>, narrow: Boolean, original: Publication?, onDismiss: () -> Unit) {
+    var periodical by remember { mutableStateOf(original is Periodical) }
+    var title by remember { mutableStateOf(original?.title.orEmpty()) }
+    var authors by remember { mutableStateOf(original?.authors.orEmpty()) }
+    var publisher by remember { mutableStateOf(original?.publisher.orEmpty()) }
+    var year by remember { mutableStateOf(original?.publicationYear?.toString().orEmpty()) }
+    var copies by remember { mutableStateOf(original?.totalCopies?.toString().orEmpty()) }
+    var isbn by remember { mutableStateOf((original as? Book)?.isbn.orEmpty()) }
+    var issue by remember { mutableStateOf(((original as? Periodical)?.issueNumber ?: 1).toString()) }
+    var branchId by remember { mutableStateOf(original?.branchId) }
+    val cover = remember { CoverDraft((original as? Book)?.cover) }
     val validBranch = branches.firstOrNull { it.id == branchId }
     val revision = remember { save.revision }
     LaunchedEffect(save.revision) { if (save.revision > revision) onDismiss() }
-    EditorDialog("Новое издание", "Библиографические сведения и место хранения", save.isSaving, save.error, onDismiss,
+    EditorDialog(if (original == null) "Новое издание" else "Редактирование издания", "Библиографические сведения и место хранения", save.isSaving, save.error, onDismiss,
         saveEnabled = validBranch != null && !cover.loading,
         onSave = {
-            if (periodical) vm.addPeriodical(title, authors, publisher, year, issue, copies, validBranch?.id ?: "")
+            if (original != null) vm.editPublication(original, title, authors, publisher, year, copies, validBranch?.id.orEmpty(), isbn, issue, cover.value)
+            else if (periodical) vm.addPeriodical(title, authors, publisher, year, issue, copies, validBranch?.id ?: "")
             else vm.addBook(title, authors, publisher, year, copies, validBranch?.id ?: "", isbn, cover.value)
         }) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (original == null) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(selected = !periodical, onClick = { periodical = false }, enabled = !save.isSaving,
                 label = { Text("Книга") }, modifier = Modifier.heightIn(min = 48.dp))
             FilterChip(selected = periodical, onClick = { periodical = true }, enabled = !save.isSaving,
@@ -360,7 +350,7 @@ private fun PublicationEditor(vm: PublicationsViewModel, save: SaveUiState, bran
             else Field("ISBN (необязательно)", isbn, { isbn = it }, Modifier.weight(1f), !save.isSaving)
         }
         ChoiceField("Филиал", validBranch?.name, branches.map { it.id to it.name }, !save.isSaving) { branchId = it }
-        if (branches.isEmpty()) Notice("Филиалов пока нет. Загрузите демонстрационные данные в разделе «Архитектура».")
+        if (branches.isEmpty()) Notice("Филиалов пока нет. Загрузите демонстрационные данные в настройках.")
         if (!periodical) CoverField(cover, !save.isSaving)
     }
 }
@@ -489,28 +479,14 @@ private fun LoanBadge(state: LoanState) {
 }
 
 @Composable
-private fun ArchitecturePane(vm: AdministrationViewModel, padding: Dp) {
+private fun SettingsPane(vm: AdministrationViewModel, padding: Dp) {
     val state by vm.state.collectAsState()
     var clearConfirmation by remember { mutableStateOf(false) }
     Catalogue(padding) {
-        item { PaneHeader("Архитектура", "Как устроена библиотечная программа") {} }
-        item {
-            InformationBlock("Основные объекты", LibraryIcon.AccountTree) {
-                Explanation("Люди", "У читателя и библиотекаря есть общие сведения о человеке. В программе: Person → Reader / Librarian.")
-                Explanation("Издания", "Книга и периодика имеют общие поля, но отличаются дополнительными сведениями. В программе: Publication → Book / Periodical.")
-                Explanation("Выдача", "Запись соединяет читателя и издание, хранит срок и состояние. Через несколько выдач читатели связаны с разными изданиями: Reader ↔ Loan ↔ Publication.")
-            }
-        }
-        item {
-            InformationBlock("Разделение обязанностей", LibraryIcon.Info) {
-                Text("Экран показывает сведения, модель представления обрабатывает действия, служба выполняет библиотечные операции, а хранилище работает с базой.")
-                Text("Compose → ViewModel → LibraryService → Repository → DAO → SQLite", style = MaterialTheme.typography.bodySmall, color = LibraryDesign.secondaryText)
-                Explanation("Шаблоны проектирования", "Repository, MVVM, Strategy, Factory, Observer, State и Facade помогают разделить эти задачи и не смешивать правила выдачи с оформлением окна.")
-            }
-        }
+        item { Text("Настройки", style = MaterialTheme.typography.headlineLarge) }
         item {
             InformationBlock("Демонстрационные данные", LibraryIcon.LibraryBooks) {
-                Text("Учебный набор содержит филиал, библиотекаря, читателей, книгу, периодику и выдачу. Повторная загрузка не создаёт дубликаты.")
+                Text("Добавить примеры читателей, изданий и выдач. Существующие записи сохранятся.")
                 CatalogButton("Добавить демоданные", LibraryIcon.Add, !state.isBusy, vm::seedDemo)
                 when {
                     state.isBusy -> Notice("Выполняем операцию", loading = true)
@@ -522,7 +498,7 @@ private fun ArchitecturePane(vm: AdministrationViewModel, padding: Dp) {
         item {
             Surface(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, LibraryDesign.divider)) {
                 Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Очистка учебной базы", style = MaterialTheme.typography.titleMedium)
+                    Text("Очистка базы", style = MaterialTheme.typography.titleMedium)
                     Text("Удалит читателей, издания, сотрудников, филиалы и историю выдач. Это действие нельзя отменить.",
                         style = MaterialTheme.typography.bodySmall, color = LibraryDesign.secondaryText)
                     QuietAction("Очистить данные", "Очистить все данные библиотеки", LibraryIcon.Delete, !state.isBusy) { clearConfirmation = true }
@@ -544,14 +520,6 @@ private fun InformationBlock(title: String, icon: LibraryIcon, content: @Composa
             }
             content()
         }
-    }
-}
-
-@Composable
-private fun Explanation(title: String, description: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Text(description, style = MaterialTheme.typography.bodySmall, color = LibraryDesign.secondaryText)
     }
 }
 

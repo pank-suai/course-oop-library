@@ -169,7 +169,7 @@ class CatalogInteractionTest {
     @Test fun `clear confirmation cancel preserves rows and confirmed clear updates the database`() = runBlocking {
         container.repositories.readers.save(Reader("qa-clear", "Читатель для проверки очистки", 1997, "Санкт-Петербург", "ГУАП"))
         compose.setContent { App(container) }
-        tab("Архитектура")
+        tab("Настройки")
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Очистить данные"))
         compose.onNodeWithText("Очистить данные").performClick()
         compose.onNodeWithText("Очистить базу?").assertIsDisplayed()
@@ -242,20 +242,23 @@ class CatalogInteractionTest {
         val pick: suspend () -> domain.BookCover? = { importBookCover(image) }
         compose.setContent { CompositionLocalProvider(LocalBookCoverPicker provides pick) { App(container) } }
         tab("Издания")
-        val edit = compose.onNodeWithContentDescription("Изменить обложку: Уже в каталоге")
+        compose.onNodeWithText("Обложка").assertDoesNotExist()
+        val edit = compose.onNodeWithContentDescription("Редактировать: Уже в каталоге")
         edit.performClick()
-        compose.onNodeWithText("Выбрать обложку").performClick()
-        compose.onNodeWithContentDescription("Предпросмотр обложки").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Авторы").assertTextContains(book.authors)
+        compose.onNodeWithContentDescription("Авторы").performTextReplacement("Новый автор")
+        compose.onNodeWithText("Выбрать обложку").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Предпросмотр обложки").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Сохранить").performClick()
         compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("Обложка: Уже в каталоге").fetchSemanticsNodes().isNotEmpty() }
         val changed = container.repositories.publications.findById(book.id) as Book
         kotlin.test.assertNotNull(changed.cover)
-        assertEquals(book, changed.copy(cover = null))
+        assertEquals(book.copy(authors = "Новый автор"), changed.copy(cover = null))
         edit.performClick()
-        compose.onNodeWithText("Убрать обложку").performClick()
+        compose.onNodeWithText("Убрать обложку").performScrollTo().performClick()
         compose.onNodeWithText("Сохранить").performClick()
         compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("Обложка недоступна: Уже в каталоге").fetchSemanticsNodes().isNotEmpty() }
-        assertEquals(book, container.repositories.publications.findById(book.id))
+        assertEquals(book.copy(authors = "Новый автор"), container.repositories.publications.findById(book.id))
     }
 
     @Test fun `book and periodical forms persist actual records and a loan returns only once`() = runBlocking {
@@ -321,7 +324,7 @@ class CatalogInteractionTest {
                 Box(Modifier.size(800.dp, 680.dp)) { App(container) }
             }
         }
-        for (label in listOf("Библиотека", "Архитектура")) {
+        for (label in listOf("Библиотека", "Настройки")) {
             compose.onNodeWithText(label).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) { action ->
                 val results = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
                 assertTrue(action(results))
@@ -374,10 +377,33 @@ class CatalogInteractionTest {
         tab("Выдачи")
         compose.onNodeWithText("Оформить выдачу").assertIsDisplayed()
         snapshot("loans-empty")
-        tab("Архитектура")
-        compose.onNodeWithText("Основные объекты").assertIsDisplayed()
-        snapshot("architecture")
+        tab("Настройки")
+        compose.onNodeWithText("Добавить демоданные").assertIsDisplayed()
+        listOf("Основные объекты", "Разделение обязанностей", "Данные на компьютере", "Архитектура").forEach { compose.onNodeWithText(it).assertDoesNotExist() }
+        snapshot("settings")
         assertTrue(runBlocking { container.repositories.readers.readersOnce().isEmpty() })
+    }
+
+    @Test fun `periodical edit honours outstanding copies and cancellation`() = runBlocking {
+        container.repositories.branches.save(LibraryBranch("b", "Филиал", "СПб"))
+        val mag = domain.Periodical("p", "Журнал", "Редактор", "ГУАП", 2025, 4, 2, "b", 1)
+        container.repositories.publications.save(mag)
+        compose.setContent { App(container) }; tab("Издания")
+        val edit = compose.onNodeWithContentDescription("Редактировать: Журнал")
+        edit.performClick()
+        compose.onNodeWithContentDescription("Номер выпуска").performTextReplacement("9")
+        compose.onNodeWithText("Отмена").performClick()
+        assertEquals(mag, container.repositories.publications.findById("p"))
+        edit.performClick()
+        compose.onNodeWithText("Выбрать обложку").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Экземпляры").performTextReplacement("1")
+        compose.onNodeWithText("Сохранить").performClick()
+        compose.onNodeWithText("Число экземпляров меньше числа выданных").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithContentDescription("Экземпляры").performTextReplacement("5")
+        compose.onNodeWithContentDescription("Номер выпуска").performTextReplacement("2")
+        compose.onNodeWithText("Сохранить").performClick()
+        compose.waitUntil(5_000) { compose.onAllNodes(isDialog()).fetchSemanticsNodes().isEmpty() }
+        assertEquals(mag.copy(issueNumber = 2, totalCopies = 5, availableCopies = 3), container.repositories.publications.findById("p"))
     }
 
     private fun field(label: String, value: String) = compose.onNodeWithContentDescription(label).performTextInput(value)

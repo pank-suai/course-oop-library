@@ -118,8 +118,17 @@ interface LibraryDao {
         }
     }
 
-    @Query("UPDATE publications SET coverImage = :image WHERE id = :id AND kind = 'BOOK'")
-    suspend fun updateBookCover(id: String, image: ByteArray?): Int
+    @androidx.room3.Update
+    suspend fun replacePublication(record: PublicationRecord): Int
+
+    @Transaction
+    suspend fun editPublication(record: PublicationRecord) {
+        val current = getPublication(record.id) ?: error("Издания больше нет в каталоге")
+        check(current.kind == record.kind) { "Вид издания изменился" }
+        val issued = current.totalCopies - current.availableCopies
+        require(record.totalCopies >= issued) { "Число экземпляров меньше числа выданных" }
+        check(replacePublication(record.copy(availableCopies = record.totalCopies - issued)) == 1) { "Не удалось сохранить издание" }
+    }
 
     @Query("UPDATE publications SET availableCopies = availableCopies - 1 WHERE id = :publicationId AND availableCopies > 0")
     suspend fun decrementAvailable(publicationId: String): Int

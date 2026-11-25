@@ -15,7 +15,7 @@ class LibraryDesignTest {
     @Test
     fun `navigation exposes all four Russian sections`() {
         assertEquals(
-            listOf("Читатели", "Издания", "Выдачи", "Архитектура"),
+            listOf("Читатели", "Издания", "Выдачи", "Настройки"),
             LibraryDesign.navigationLabels,
         )
     }

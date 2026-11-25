@@ -42,7 +42,7 @@ internal object LibraryDesign {
     val error = Color(0xFFA12323)
     val errorContainer = Color(0xFFFFF0F0)
     val disabled = Color(0xFFEDEDF1)
-    val navigationLabels = listOf("Читатели", "Издания", "Выдачи", "Архитектура")
+    val navigationLabels = listOf("Читатели", "Издания", "Выдачи", "Настройки")
     const val windowWidthDp = 1180
     const val windowHeightDp = 780
 }
